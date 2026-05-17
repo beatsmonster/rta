@@ -1,19 +1,16 @@
 # Archivist Agent Output
 
-- **timestamp:** 2026-05-17T18:44:14Z
+- **timestamp:** 2026-05-17T18:47:53Z
 - **exit_code:** 0
 
 ---
 
-All archive notes written and performance report regenerated. Here's the summary:
+All archival tasks complete:
 
-**Phase 8 (SSH config checker) archived — BUILD COMPLETE**
+- **8/8 experiment notes** verified in `.factory/archive/experiments/` — all KEEP verdicts documented with lines, tests, and commits
+- **Dashboard updated** at `.factory/archive/remote-tmux-access.md` with cycle summary reference
+- **Cycle summary written** to `.factory/archive/strategies/remote-tmux-access-2026-05-17-cycle-summary.md` — covers final metrics, phase breakdown, design decisions, architecture, strategy evolution, patterns, and future work
+- **Performance report regenerated** via `factory report-update`
+- **Patterns file** already captured 4 cross-project learnings from this build
 
-Written:
-- **Experiment note**: `.factory/archive/experiments/remote-tmux-access-008.md` — KEEP verdict, 110 lines, `b002dfe`
-- **Strategy snapshot**: `.factory/archive/strategies/remote-tmux-access-2026-05-17-phase8-complete.md` — final build state summary
-- **Dashboard updated**: `.factory/archive/remote-tmux-access.md` — state changed to "complete", 8/8 phases, 1503 lines, 25 tests, 100% keep rate
-- **Pattern added**: "Incremental 8-Phase Build With Zero Reverts" — documents the 100% keep rate and why the phase decomposition worked
-- **Performance report**: regenerated via `factory report-update`
-
-Final project stats: **1503 lines Go, 25 tests, 8 experiments, 8 kept, 0 reverted.**
+Final stats: 1503 lines Go, 25 tests, 8 phases, 100% keep rate, 0 reverts.

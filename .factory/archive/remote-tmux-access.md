@@ -106,6 +106,10 @@ Phase 2 (tmux) ✅ ──> Phase 3 (process tree) ✅
 - **2026-05-17** — Phase 7 shell profile injection built (KEEP, 340 lines, 11 tests, marker-based idempotency)
 - **2026-05-17** — Phase 8 SSH config checker built (KEEP, 110 lines, final phase — BUILD COMPLETE)
 
+## Cycle Summary
+
+**Build cycle 2026-05-17 COMPLETE.** All 8 phases delivered with 100% keep rate. See [full cycle summary](strategies/remote-tmux-access-2026-05-17-cycle-summary.md).
+
 ## Recent Experiments
 
 - Experiment #1 — Phase 1 scaffold (**KEEP**, scaffold complete)

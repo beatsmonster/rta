@@ -56,3 +56,7 @@
 {"type": "discover.completed", "timestamp": "2026-05-17T18:45:08.444074+00:00", "project": "remote-tmux-access", "agent": null, "data": {"language": "go", "framework": null, "dimensions": ["tests", "lint", "observability"]}}
 {"type": "eval.started", "timestamp": "2026-05-17T18:46:17.074238+00:00", "project": "remote-tmux-access", "agent": null, "data": {"command": "python eval/score.py"}}
 {"type": "eval.completed", "timestamp": "2026-05-17T18:46:17.781447+00:00", "project": "remote-tmux-access", "agent": null, "data": {"composite": 0.5011, "passed": false, "dimensions": 11}}
+{"type": "detect", "timestamp": "2026-05-17T18:46:26.523289+00:00", "project": "remote-tmux-access", "agent": null, "data": {"state": "has_factory"}}
+{"type": "agent.started", "timestamp": "2026-05-17T18:46:39.096524+00:00", "project": "remote-tmux-access", "agent": "archivist", "data": {"task": "Final archive for this factory cycle on /Users/alienzach/factory-projects/remote-tmux-access.\nThis is a BUILD MODE completion \u2014 all 8 phases were built successfully.\n1. Read full git log to see all co"}}
+{"type": "agent.completed", "timestamp": "2026-05-17T18:47:53.478279+00:00", "project": "remote-tmux-access", "agent": "archivist", "data": {"return_code": 0}}
+{"type": "sprint.completed", "timestamp": "2026-05-17T18:47:58.538181+00:00", "project": "remote-tmux-access", "agent": null, "data": {}}
