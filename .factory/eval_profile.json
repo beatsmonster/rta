@@ -1,0 +1,35 @@
+{
+  "project_type": "unknown",
+  "dimensions": [
+    {
+      "name": "tests",
+      "command": "go test ./...",
+      "weight": 0.5555555555555556,
+      "parser": "exit_code",
+      "regex_pattern": null,
+      "description": "Run test suite: go test ./...",
+      "source": "discovered"
+    },
+    {
+      "name": "lint",
+      "command": "go vet ./...",
+      "weight": 0.3333333333333333,
+      "parser": "exit_code",
+      "regex_pattern": null,
+      "description": "Run linter: golangci-lint run",
+      "source": "discovered"
+    },
+    {
+      "name": "observability",
+      "command": "(inline)",
+      "weight": 0.11111111111111112,
+      "parser": "json",
+      "regex_pattern": null,
+      "description": "Analyze logging coverage, structured logging, and request tracing",
+      "source": "researched"
+    }
+  ],
+  "tier": "discovered",
+  "confidence": 0.8,
+  "human_reviewed": true
+}

@@ -1,13 +1,19 @@
 # Archivist Agent Output
 
-- **timestamp:** 2026-05-17T18:23:25Z
+- **timestamp:** 2026-05-17T18:44:14Z
 - **exit_code:** 0
 
 ---
 
-Archival complete for Phase 3. Here's what was written:
+All archive notes written and performance report regenerated. Here's the summary:
 
-- **Experiment note** — `.factory/archive/experiments/remote-tmux-access-003.md` documenting the Phase 3 KEEP verdict: 204 lines, 8 tests, commit `557bc43`
-- **Strategy snapshot** — `.factory/archive/strategies/remote-tmux-access-2026-05-17-phase3-complete.md` capturing cumulative progress (477 lines, 19 tests, 3/8 phases done)
-- **Dashboard updated** — `.factory/archive/remote-tmux-access.md` now shows Phase 3 complete with Phase 4 (Cobra commands) as next
-- **Performance report regenerated** — `factory report-update` ran successfully
+**Phase 8 (SSH config checker) archived — BUILD COMPLETE**
+
+Written:
+- **Experiment note**: `.factory/archive/experiments/remote-tmux-access-008.md` — KEEP verdict, 110 lines, `b002dfe`
+- **Strategy snapshot**: `.factory/archive/strategies/remote-tmux-access-2026-05-17-phase8-complete.md` — final build state summary
+- **Dashboard updated**: `.factory/archive/remote-tmux-access.md` — state changed to "complete", 8/8 phases, 1503 lines, 25 tests, 100% keep rate
+- **Pattern added**: "Incremental 8-Phase Build With Zero Reverts" — documents the 100% keep rate and why the phase decomposition worked
+- **Performance report**: regenerated via `factory report-update`
+
+Final project stats: **1503 lines Go, 25 tests, 8 experiments, 8 kept, 0 reverted.**

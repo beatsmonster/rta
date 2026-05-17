@@ -1,6 +1,6 @@
 {
   "project_name": "remote-tmux-access",
-  "generated_at": "2026-05-17 14:23:20.457569",
+  "generated_at": "2026-05-17 14:44:06.355240",
   "total_experiments": 0,
   "keep_count": 0,
   "revert_count": 0,
@@ -54,7 +54,7 @@
     {
       "source": ".factory/archive/experiments/remote-tmux-access-001.md",
       "content": "---\ntags:\n  - factory\n  - experiment\n  - remote-tmux-access\nproject: remote-tmux-access\nexperiment_id: 1\nverdict: KEEP\nscore_delta: \"N/A \u2192 scaffold complete\"\ndate: 2026-05-17\nsource: factory-archivist\n---\n\n# Experiment #1: Phase 1 \u2014 Project Scaffold\n\n## Hypothesis\n\nA buildable Go project with Cobra CLI, internal package structure, Makefile, and CLAUDE.md provides a correct foundation for all subsequent phases.\n\n## Result\n\n**KEEP** \u2014 CEO verdict: PROCEED. Scaffold builds, runs, help output works.",
-      "timestamp": "2026-05-17 14:23:20.454250",
+      "timestamp": "2026-05-17 14:44:06.349929",
       "project": "remote-tmux-access",
       "tags": [
         "archive"
@@ -63,7 +63,7 @@
     {
       "source": ".factory/archive/experiments/remote-tmux-access-002.md",
       "content": "---\ntags:\n  - factory\n  - experiment\n  - remote-tmux-access\nproject: remote-tmux-access\nexperiment_id: 2\nverdict: KEEP\nscore_delta: \"scaffold \u2192 tmux parsing complete\"\ndate: 2026-05-17\nsource: factory-archivist\n---\n\n# Experiment #2: Phase 2 \u2014 tmux Session/Pane Parsing\n\n## Hypothesis\n\nA `internal/tmux/` package with `ListSessions()`, `ListPanes()`, and `AttachSession()` provides the foundation for all session discovery and attachment in later phases.\n\n## Result\n\n**KEEP** \u2014 Phase 2 implemented exac",
-      "timestamp": "2026-05-17 14:23:20.454561",
+      "timestamp": "2026-05-17 14:44:06.350200",
       "project": "remote-tmux-access",
       "tags": [
         "archive"
@@ -72,7 +72,52 @@
     {
       "source": ".factory/archive/experiments/remote-tmux-access-003.md",
       "content": "---\ntags:\n  - factory\n  - experiment\n  - remote-tmux-access\nproject: remote-tmux-access\nexperiment_id: 3\nverdict: KEEP\nscore_delta: \"tmux parsing complete \u2192 process tree complete\"\ndate: 2026-05-17\nsource: factory-archivist\n---\n\n# Experiment #3: Phase 3 \u2014 Process Tree Walking and Claude Detection\n\n## Hypothesis\n\nAn `internal/process/` package with `BuildTree()`, `HasDescendant()`, and `DetectClaude()` enables detection of Claude Code instances running inside tmux panes by walking the process tree",
-      "timestamp": "2026-05-17 14:23:20.454746",
+      "timestamp": "2026-05-17 14:44:06.350399",
+      "project": "remote-tmux-access",
+      "tags": [
+        "archive"
+      ]
+    },
+    {
+      "source": ".factory/archive/experiments/remote-tmux-access-004.md",
+      "content": "---\ntags:\n  - factory\n  - experiment\n  - remote-tmux-access\nproject: remote-tmux-access\nexperiment_id: 4\nverdict: KEEP\nscore_delta: \"process tree complete \u2192 cobra commands complete\"\ndate: 2026-05-17\nsource: factory-archivist\n---\n\n# Experiment #4: Phase 4 \u2014 Cobra Commands (CLI Routing)\n\n## Hypothesis\n\nWiring Cobra subcommands (`attach`, `status`, `setup`, `setup ssh`) with real implementations using the tmux and process packages provides a functional CLI layer for session discovery and attachment",
+      "timestamp": "2026-05-17 14:44:06.350699",
+      "project": "remote-tmux-access",
+      "tags": [
+        "archive"
+      ]
+    },
+    {
+      "source": ".factory/archive/experiments/remote-tmux-access-005.md",
+      "content": "---\ntags:\n  - factory\n  - experiment\n  - remote-tmux-access\nproject: remote-tmux-access\nexperiment_id: 5\nverdict: KEEP\nscore_delta: \"cobra commands complete \u2192 attach e2e refined\"\ndate: 2026-05-17\nsource: factory-archivist\n---\n\n# Experiment #5: Phase 5 \u2014 Attach E2E (FindSession + Edge Cases)\n\n## Hypothesis\n\nExtracting session matching into a reusable `tmux.FindSession` function and hardening the attach command's error paths produces a robust end-to-end attach flow ready for TUI integration.\n\n## R",
+      "timestamp": "2026-05-17 14:44:06.350969",
+      "project": "remote-tmux-access",
+      "tags": [
+        "archive"
+      ]
+    },
+    {
+      "source": ".factory/archive/experiments/remote-tmux-access-006.md",
+      "content": "---\ntags:\n  - factory\n  - experiment\n  - remote-tmux-access\nproject: remote-tmux-access\nexperiment_id: 6\nverdict: KEEP\nscore_delta: \"+309 lines, TUI functional\"\ndate: 2026-05-17\nsource: factory-archivist\n---\n\n# Experiment #6: Phase 6 \u2014 Bubble Tea TUI session picker\n\n## Hypothesis\nAdd an interactive TUI using Bubble Tea v2 and Lipgloss v2 that lists tmux sessions split into Claude Code / Other sections, supports cursor navigation, Enter to attach, r to refresh, and q to quit. Root command auto-at",
+      "timestamp": "2026-05-17 14:44:06.351223",
+      "project": "remote-tmux-access",
+      "tags": [
+        "archive"
+      ]
+    },
+    {
+      "source": ".factory/archive/experiments/remote-tmux-access-007.md",
+      "content": "---\ntags:\n  - factory\n  - experiment\n  - remote-tmux-access\nproject: remote-tmux-access\nexperiment_id: 7\nverdict: KEEP\nscore_delta: \"+340 lines, +11 tests\"\ndate: 2026-05-17\nsource: factory-archivist\n---\n\n# Experiment #7: Phase 7 \u2014 Shell profile injection\n\n## Hypothesis\nAdd `internal/profile/` package with Install/Remove functions that idempotently inject an rta auto-launch block into the user's shell profile (~/.zshrc or ~/.bashrc), so rta starts automatically on SSH login.\n\n## Result\n**KEEP** \u2014",
+      "timestamp": "2026-05-17 14:44:06.351478",
+      "project": "remote-tmux-access",
+      "tags": [
+        "archive"
+      ]
+    },
+    {
+      "source": ".factory/archive/experiments/remote-tmux-access-008.md",
+      "content": "---\ntags:\n  - factory\n  - experiment\n  - remote-tmux-access\nproject: remote-tmux-access\nexperiment_id: 8\nverdict: KEEP\nscore_delta: \"+110 lines, 0 new tests\"\ndate: 2026-05-17\nsource: factory-archivist\n---\n\n# Experiment #8: Phase 8 \u2014 SSH config checker\n\n## Hypothesis\nAdd an SSH config checker to the `setup ssh` subcommand that validates the user's sshd/SSH configuration is compatible with tmux session forwarding (e.g., `AllowAgentForwarding`, `PermitTTY`, correct shell).\n\n## Result\n**KEEP** \u2014 110",
+      "timestamp": "2026-05-17 14:44:06.351648",
       "project": "remote-tmux-access",
       "tags": [
         "archive"
@@ -81,7 +126,7 @@
     {
       "source": ".factory/archive/patterns/patterns.md",
       "content": "---\ntags:\n  - factory\n  - patterns\nsource: factory-archivist\n---\n\n# Cross-Project Patterns\n\n## Research-to-Spec Pivot\nDiscovered in remote-tmux-access ideation (2026-05-17).\nResearch recommended a Python + WebSocket + xterm.js web-based architecture. User feedback pivoted the project to Go + SSH-native CLI/TUI with zero web components. The research was still valuable \u2014 it identified the key differentiator (bridging to existing tmux sessions) and mapped the competitive landscape \u2014 but the technol",
-      "timestamp": "2026-05-17 14:23:20.454995",
+      "timestamp": "2026-05-17 14:44:06.351726",
       "project": "remote-tmux-access",
       "tags": [
         "archive"
@@ -89,8 +134,8 @@
     },
     {
       "source": ".factory/archive/remote-tmux-access.md",
-      "content": "---\ntags:\n  - factory\n  - project\n  - remote-tmux-access\nsource: factory-archivist\n---\n\n# Factory: remote-tmux-access\n\n## Status\n- **State**: building (Phase 3 complete, Phase 4 next)\n- **Current Score**: process tree + tmux parsing passing (builds, 19 tests pass, vet clean)\n- **Experiments Run**: 3\n- **Kept**: 3, **Reverted**: 0\n\n## Project Summary\n\n**rta (Remote tmux Access)** \u2014 A single-binary Go CLI that lets you access running Claude Code sessions from an iPhone over SSH. You SSH into your ",
-      "timestamp": "2026-05-17 14:23:20.455074",
+      "content": "---\ntags:\n  - factory\n  - project\n  - remote-tmux-access\nsource: factory-archivist\n---\n\n# Factory: remote-tmux-access\n\n## Status\n- **State**: complete (all 8 phases delivered)\n- **Current Score**: feature-complete CLI \u2014 1503 lines Go, 25 tests passing, 8/8 phases, 100% keep rate\n- **Experiments Run**: 8\n- **Kept**: 8, **Reverted**: 0\n\n## Project Summary\n\n**rta (Remote tmux Access)** \u2014 A single-binary Go CLI that lets you access running Claude Code sessions from an iPhone over SSH. You SSH into y",
+      "timestamp": "2026-05-17 14:44:06.351797",
       "project": "remote-tmux-access",
       "tags": [
         "archive"
@@ -99,7 +144,7 @@
     {
       "source": ".factory/archive/sources/architecture-patterns.md",
       "content": "---\ntags:\n  - factory\n  - source\n  - remote-tmux-access\nsource: factory-archivist\ndate: 2026-05-17\n---\n\n# Architecture Patterns \u2014 Remote Terminal Access\n\n## Pattern 1: tmux Control Mode Bridge\n- tmux's `-C` flag provides a text-based protocol for programmatic access\n- All pane output sent as `%output <pane_id> <data>` notifications\n- Used by iTerm2 for tmux integration\n- **rta decision**: Deferred to post-v1. Adds complexity without clear benefit for the attach-only use case.\n\n## Pattern 2: PTY ",
-      "timestamp": "2026-05-17 14:23:20.455247",
+      "timestamp": "2026-05-17 14:44:06.351952",
       "project": "remote-tmux-access",
       "tags": [
         "archive"
@@ -108,7 +153,7 @@
     {
       "source": ".factory/archive/sources/bubble-tea-tui-patterns.md",
       "content": "---\ntags:\n  - factory\n  - source\n  - remote-tmux-access\nsource: factory-archivist\ndate: 2026-05-17\n---\n\n# Bubble Tea TUI Patterns \u2014 Implementation Reference\n\n## Model-View-Update Architecture\n\nAll Bubble Tea apps follow The Elm Architecture: Model (state struct) -> Init (initial commands) -> Update (handle messages, return commands) -> View (render output).\n\n## Custom List Selector (Recommended over bubbles/list)\n\nA custom list is simpler for rta's use case \u2014 only needs cursor movement, two sect",
-      "timestamp": "2026-05-17 14:23:20.455511",
+      "timestamp": "2026-05-17 14:44:06.352192",
       "project": "remote-tmux-access",
       "tags": [
         "archive"
@@ -117,7 +162,7 @@
     {
       "source": ".factory/archive/sources/cobra-cli-patterns.md",
       "content": "---\ntags:\n  - factory\n  - source\n  - remote-tmux-access\nsource: factory-archivist\ndate: 2026-05-17\n---\n\n# Cobra CLI Subcommand Patterns \u2014 rta Project Layout\n\n## Recommended Directory Structure\n\n```\nrta/\n\u251c\u2500\u2500 main.go           # calls cmd.Execute()\n\u251c\u2500\u2500 cmd/\n\u2502   \u251c\u2500\u2500 root.go       # root command (launches TUI)\n\u2502   \u251c\u2500\u2500 attach.go     # rta attach <name>\n\u2502   \u251c\u2500\u2500 status.go     # rta status [--json]\n\u2502   \u251c\u2500\u2500 setup.go      # rta setup [--undo]\n\u2502   \u2514\u2500\u2500 setup_ssh.go  # rta setup ssh\n\u2514\u2500\u2500 internal/\n    \u251c\u2500\u2500 tmu",
-      "timestamp": "2026-05-17 14:23:20.455680",
+      "timestamp": "2026-05-17 14:44:06.352397",
       "project": "remote-tmux-access",
       "tags": [
         "archive"
@@ -126,7 +171,7 @@
     {
       "source": ".factory/archive/sources/competing-tools-survey.md",
       "content": "---\ntags:\n  - factory\n  - source\n  - remote-tmux-access\nsource: factory-archivist\ndate: 2026-05-17\n---\n\n# Competing Tools Survey \u2014 Remote Terminal Sharing\n\n## tmate \u2014 SSH-based Terminal Sharing\n- **URL**: https://tmate.io | https://github.com/tmate-io/tmate-ssh-server\n- **Architecture**: Fork of tmux 2.x \u2192 SSH tunnel via libssh \u2192 relay server \u2192 remote SSH clients\n- **Key detail**: Permanently locked to tmux 2.x codebase (C). Geo-distributed relays. Session isolation via PID namespaces.\n- **Relev",
-      "timestamp": "2026-05-17 14:23:20.455883",
+      "timestamp": "2026-05-17 14:44:06.352625",
       "project": "remote-tmux-access",
       "tags": [
         "archive"
@@ -135,7 +180,7 @@
     {
       "source": ".factory/archive/sources/pitfalls-from-research.md",
       "content": "---\ntags:\n  - factory\n  - source\n  - remote-tmux-access\nsource: factory-archivist\ndate: 2026-05-17\n---\n\n# Research Pitfalls \u2014 Applicability to rta\n\nThe research identified 8 pitfalls for remote terminal access. Since rta pivoted from web-based to SSH-native, most are no longer applicable, but some inform related concerns.\n\n## Still Relevant\n\n### Terminal Resize on Constrained Screens\n- **Original concern**: Browser resize events trigger PTY resize storms\n- **rta version**: iOS SSH apps have fixe",
-      "timestamp": "2026-05-17 14:23:20.456065",
+      "timestamp": "2026-05-17 14:44:06.352802",
       "project": "remote-tmux-access",
       "tags": [
         "archive"
@@ -144,7 +189,7 @@
     {
       "source": ".factory/archive/sources/process-tree-walking.md",
       "content": "---\ntags:\n  - factory\n  - source\n  - remote-tmux-access\nsource: factory-archivist\ndate: 2026-05-17\n---\n\n# Process Tree Walking on macOS \u2014 Claude Detection\n\n## ps Command\n\n```bash\nps -ax -o pid,ppid,comm\n```\n\n- `ps -ax` and `ps -e` are equivalent on macOS (all processes)\n- `comm` returns the base executable name (e.g., `claude`, `bash`), not full path \u2014 ideal for matching\n- Header line must be skipped when parsing\n- Output is space-separated with leading whitespace\n\n## Design: Single ps Call + BF",
-      "timestamp": "2026-05-17 14:23:20.456234",
+      "timestamp": "2026-05-17 14:44:06.352912",
       "project": "remote-tmux-access",
       "tags": [
         "archive"
@@ -153,7 +198,7 @@
     {
       "source": ".factory/archive/sources/shell-profile-injection.md",
       "content": "---\ntags:\n  - factory\n  - source\n  - remote-tmux-access\nsource: factory-archivist\ndate: 2026-05-17\n---\n\n# Shell Profile Block Injection/Removal \u2014 Auto-Launch Setup\n\n## The Auto-Launch Block\n\n```bash\n# rta: remote tmux access (auto-launch)\nif [ -n \"$SSH_CONNECTION\" ] && command -v rta >/dev/null 2>&1; then\n  rta\nfi\n# end rta\n```\n\nOnly triggers when:\n1. `$SSH_CONNECTION` is set (SSH session, not local terminal)\n2. `rta` is on PATH\n\n## Shell Detection\n\nReads `$SHELL` env var; matches suffix `zsh` -",
-      "timestamp": "2026-05-17 14:23:20.456388",
+      "timestamp": "2026-05-17 14:44:06.353027",
       "project": "remote-tmux-access",
       "tags": [
         "archive"
@@ -162,7 +207,7 @@
     {
       "source": ".factory/archive/sources/syscall-exec-attach.md",
       "content": "---\ntags:\n  - factory\n  - source\n  - remote-tmux-access\nsource: factory-archivist\ndate: 2026-05-17\n---\n\n# syscall.Exec for Process Replacement \u2014 Direct Attach\n\n## Two Attach Modes\n\n- **`syscall.Exec`**: For `rta attach <name>` \u2014 replaces the Go process entirely with tmux. User's shell prompt reappears after tmux detach. Cleanest UX.\n- **`tea.ExecProcess`**: For the TUI case \u2014 suspends TUI, runs tmux as child, resumes TUI on detach.\n\n## syscall.Exec Implementation\n\n```go\nbinary, err := exec.LookP",
-      "timestamp": "2026-05-17 14:23:20.456514",
+      "timestamp": "2026-05-17 14:44:06.353137",
       "project": "remote-tmux-access",
       "tags": [
         "archive"
@@ -171,7 +216,7 @@
     {
       "source": ".factory/archive/sources/tmux-cli-parsing.md",
       "content": "---\ntags:\n  - factory\n  - source\n  - remote-tmux-access\nsource: factory-archivist\ndate: 2026-05-17\n---\n\n# tmux CLI Output Parsing \u2014 Format Strings and Error Handling\n\n## list-sessions\n\n```bash\ntmux list-sessions -F '#{session_name}|#{session_attached}|#{session_windows}'\n```\n\nAvailable format variables: `session_name`, `session_attached` (1/0), `session_windows`.\n\n**IMPORTANT:** `#{session_width}` and `#{session_height}` were removed in tmux 2.9. Use `#{window_width}` / `#{window_height}` or `#{",
-      "timestamp": "2026-05-17 14:23:20.456670",
+      "timestamp": "2026-05-17 14:44:06.353233",
       "project": "remote-tmux-access",
       "tags": [
         "archive"
@@ -180,7 +225,7 @@
     {
       "source": ".factory/archive/strategies/remote-tmux-access-2026-05-17-build-plan.md",
       "content": "---\ntags:\n  - factory\n  - strategy\n  - remote-tmux-access\ndate: 2026-05-17\nsource: factory-archivist\n---\n\n# Strategy: remote-tmux-access \u2014 Build Plan (CEO-Approved 2026-05-17)\n\n## CEO Verdict\n\n**PROCEED** \u2014 8-phase plan is well-structured, dependency-ordered, and achievable. Each phase is one PR's worth of work. Phase 1 is correctly scaffold + eval. Implementation details reference research code samples directly. Dependency graph is correct \u2014 phases 7/8 can parallelize after 6.\n\nNo issues found.",
-      "timestamp": "2026-05-17 14:23:20.456826",
+      "timestamp": "2026-05-17 14:44:06.353409",
       "project": "remote-tmux-access",
       "tags": [
         "archive"
@@ -189,7 +234,7 @@
     {
       "source": ".factory/archive/strategies/remote-tmux-access-2026-05-17-phase1-complete.md",
       "content": "---\ntags:\n  - factory\n  - strategy\n  - remote-tmux-access\ndate: 2026-05-17\nsource: factory-archivist\n---\n\n# Strategy Snapshot: remote-tmux-access \u2014 2026-05-17 (Phase 1 Complete)\n\n## Current State\n\nPhase 1 (scaffold) is complete and CEO-approved. The project has a buildable Go binary with Cobra CLI, four internal package stubs, a Makefile, and project conventions documented in CLAUDE.md.\n\n## What Was Built\n\n- Go 1.24 module with Cobra dependency\n- Root command prints version placeholder\n- Interna",
-      "timestamp": "2026-05-17 14:23:20.456998",
+      "timestamp": "2026-05-17 14:44:06.353584",
       "project": "remote-tmux-access",
       "tags": [
         "archive"
@@ -198,7 +243,7 @@
     {
       "source": ".factory/archive/strategies/remote-tmux-access-2026-05-17-phase2-complete.md",
       "content": "---\ntags:\n  - factory\n  - strategy\n  - remote-tmux-access\ndate: 2026-05-17\nsource: factory-archivist\n---\n\n# Strategy Snapshot: remote-tmux-access \u2014 2026-05-17 (Phase 2 Complete)\n\n## Current State\n\nPhase 2 (tmux parsing) is complete. The `internal/tmux/` package provides session listing, pane listing, session attachment via `syscall.Exec`, and proper error classification. All 11 unit tests pass. Combined with the Phase 1 scaffold, the project now has the core tmux interaction layer that all subse",
-      "timestamp": "2026-05-17 14:23:20.457156",
+      "timestamp": "2026-05-17 14:44:06.353862",
       "project": "remote-tmux-access",
       "tags": [
         "archive"
@@ -207,7 +252,52 @@
     {
       "source": ".factory/archive/strategies/remote-tmux-access-2026-05-17-phase3-complete.md",
       "content": "---\ntags:\n  - factory\n  - strategy\n  - remote-tmux-access\ndate: 2026-05-17\nsource: factory-archivist\n---\n\n# Strategy Snapshot: remote-tmux-access \u2014 2026-05-17 (Phase 3 Complete)\n\n## Current State\n\nPhase 3 (process tree) is complete. The `internal/process/` package provides process tree construction from a single `ps` call and BFS descendant search for Claude detection. All 8 unit tests pass. Combined with Phases 1\u20132, the project now has both tmux interaction and process detection layers \u2014 the tw",
-      "timestamp": "2026-05-17 14:23:20.457321",
+      "timestamp": "2026-05-17 14:44:06.354046",
+      "project": "remote-tmux-access",
+      "tags": [
+        "archive"
+      ]
+    },
+    {
+      "source": ".factory/archive/strategies/remote-tmux-access-2026-05-17-phase4-complete.md",
+      "content": "---\ntags:\n  - factory\n  - strategy\n  - remote-tmux-access\ndate: 2026-05-17\nsource: factory-archivist\n---\n\n# Strategy Snapshot: remote-tmux-access \u2014 2026-05-17 (Phase 4 Complete)\n\n## Current State\n\nPhase 4 (Cobra commands) is complete. All CLI subcommands are wired with real implementations for `attach` and `status`, and placeholder stubs for `setup` and `setup ssh`. A macOS-specific bugfix for tmux error classification was applied in the same cycle. The project now has a functional CLI \u2014 `rta st",
+      "timestamp": "2026-05-17 14:44:06.354246",
+      "project": "remote-tmux-access",
+      "tags": [
+        "archive"
+      ]
+    },
+    {
+      "source": ".factory/archive/strategies/remote-tmux-access-2026-05-17-phase5-complete.md",
+      "content": "---\ntags:\n  - factory\n  - strategy\n  - remote-tmux-access\ndate: 2026-05-17\nsource: factory-archivist\n---\n\n# Strategy: remote-tmux-access \u2014 2026-05-17 (Phase 5 Complete)\n\n## Current State\n\nPhase 5 (attach e2e) is complete. The project is 62.5% through the 8-phase build plan (5/8 phases done).\n\n## What Phase 5 Accomplished\n\nRefactored session matching into a reusable `tmux.FindSession` function and hardened all error paths in the attach command. This is the final piece needed before the TUI can ca",
+      "timestamp": "2026-05-17 14:44:06.354500",
+      "project": "remote-tmux-access",
+      "tags": [
+        "archive"
+      ]
+    },
+    {
+      "source": ".factory/archive/strategies/remote-tmux-access-2026-05-17-phase6-complete.md",
+      "content": "---\ntags:\n  - factory\n  - strategy\n  - remote-tmux-access\ndate: 2026-05-17\nsource: factory-archivist\n---\n\n# Strategy: remote-tmux-access \u2014 2026-05-17 (Phase 6 Complete)\n\n## Current State\nPhase 6 (Bubble Tea TUI) is complete. The project now has a fully interactive session picker with auto-attach, built on the Charm ecosystem (bubbletea v2, lipgloss v2). 6 of 8 phases done (75%).\n\n## What's Left\n\n### Phase 7: Shell Profile Injection (`internal/profile/`)\n- Idempotent marker-based block install/re",
+      "timestamp": "2026-05-17 14:44:06.354656",
+      "project": "remote-tmux-access",
+      "tags": [
+        "archive"
+      ]
+    },
+    {
+      "source": ".factory/archive/strategies/remote-tmux-access-2026-05-17-phase7-complete.md",
+      "content": "---\ntags:\n  - factory\n  - strategy\n  - remote-tmux-access\ndate: 2026-05-17\nsource: factory-archivist\n---\n\n# Strategy: remote-tmux-access \u2014 2026-05-17 (Phase 7 Complete)\n\n## Current State\n7 of 8 phases complete (87.5%). Only Phase 8 (SSH config checker) remains.\n\n## Phase 7 Outcome\nShell profile injection implemented cleanly. The `internal/profile/` package adds marker-fenced Install/Remove functions that idempotently manage a 4-line auto-launch block in ~/.zshrc or ~/.bashrc. The block only fire",
+      "timestamp": "2026-05-17 14:44:06.354815",
+      "project": "remote-tmux-access",
+      "tags": [
+        "archive"
+      ]
+    },
+    {
+      "source": ".factory/archive/strategies/remote-tmux-access-2026-05-17-phase8-complete.md",
+      "content": "---\ntags:\n  - factory\n  - strategy\n  - remote-tmux-access\ndate: 2026-05-17\nsource: factory-archivist\n---\n\n# Strategy: remote-tmux-access \u2014 2026-05-17 (Phase 8 Complete \u2014 BUILD FINISHED)\n\n## Final State\n\nAll 8 phases of the build plan have been completed successfully. The project is **feature-complete** as specified in the original strategy.\n\n## Completed Phases\n\n1. **Scaffold** \u2014 Go module, Makefile, directory structure (`871e6dd`)\n2. **tmux parsing** \u2014 Session/pane listing, format string parsin",
+      "timestamp": "2026-05-17 14:44:06.354979",
       "project": "remote-tmux-access",
       "tags": [
         "archive"
@@ -216,7 +306,7 @@
     {
       "source": ".factory/archive/strategies/remote-tmux-access-2026-05-17.md",
       "content": "---\ntags:\n  - factory\n  - strategy\n  - remote-tmux-access\ndate: 2026-05-17\nsource: factory-archivist\n---\n\n# Strategy: remote-tmux-access \u2014 2026-05-17\n\n## Ideation Process\n\n### Phase 1: Research (04:19\u201304:24 UTC)\n\nThe researcher agent surveyed the landscape of remote terminal sharing tools. Six existing projects were analyzed:\n\n1. **tmate** \u2014 SSH-based terminal sharing, fork of tmux 2.x. Battle-tested but permanently behind upstream tmux. Written in C, hard to extend.\n2. **sshx** \u2014 Rust-based wit",
-      "timestamp": "2026-05-17 14:23:20.457487",
+      "timestamp": "2026-05-17 14:44:06.355137",
       "project": "remote-tmux-access",
       "tags": [
         "archive"

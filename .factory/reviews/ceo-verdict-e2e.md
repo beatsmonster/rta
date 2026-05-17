@@ -1,0 +1,12 @@
+## E2E Verification
+- **Status:** PASS
+- **Start command:** `./rta` (launches TUI) or `./rta status` (non-interactive)
+- **What was tested:**
+  - No-sessions case: graceful "No tmux sessions found" message
+  - Status with real sessions: correct table and JSON output
+  - Attach substring matching: exact match, ambiguous match, no match — all correct
+  - SSH config checker: read-only inspection works, reports issues with fix instructions
+  - Help output: all subcommands visible
+  - syscall.Exec attach: correctly attempts tmux attach (needs real terminal)
+- **Issues found:** None
+- **Smoke test command:** `go build -o ./rta . && ./rta status 2>&1 | grep -q "SESSION\|No tmux"` (verifies binary builds and status command works)
