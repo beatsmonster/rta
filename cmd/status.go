@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -37,6 +38,14 @@ func init() {
 func showStatus(asJSON bool) error {
 	sessions, err := tmux.ListSessions()
 	if err != nil {
+		if errors.Is(err, tmux.ErrNoServer) || errors.Is(err, tmux.ErrNoSessions) {
+			if asJSON {
+				fmt.Println("[]")
+				return nil
+			}
+			fmt.Println("No tmux sessions found.")
+			return nil
+		}
 		return fmt.Errorf("listing sessions: %w", err)
 	}
 

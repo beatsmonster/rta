@@ -57,7 +57,7 @@ func classifyError(err error) error {
 	exitErr, ok := err.(*exec.ExitError)
 	if ok {
 		stderr := string(exitErr.Stderr)
-		if strings.Contains(stderr, "no server running") {
+		if strings.Contains(stderr, "no server running") || strings.Contains(stderr, "error connecting to") {
 			return ErrNoServer
 		}
 		if strings.Contains(stderr, "no sessions") {

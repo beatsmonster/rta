@@ -1,0 +1,4 @@
+- tmux is assumed to be installed (it's a prerequisite for the tool to be useful, not a build dependency)
+- No API keys, credentials, or external accounts needed
+- No permissions beyond normal file system access
+- SSH config checker is read-only (inspect, don't modify)
