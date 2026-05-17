@@ -53,6 +53,16 @@ func AttachSession(sessionName string) error {
 	return syscall.Exec(binary, args, os.Environ())
 }
 
+func FindSession(substring string, sessions []Session) []Session {
+	var matches []Session
+	for _, s := range sessions {
+		if strings.Contains(s.Name, substring) {
+			matches = append(matches, s)
+		}
+	}
+	return matches
+}
+
 func classifyError(err error) error {
 	exitErr, ok := err.(*exec.ExitError)
 	if ok {

@@ -125,6 +125,72 @@ func TestParsePanes(t *testing.T) {
 	}
 }
 
+func TestFindSession(t *testing.T) {
+	sessions := []Session{
+		{Name: "webapp", Attached: true, Windows: 3},
+		{Name: "web-api", Attached: false, Windows: 1},
+		{Name: "build", Attached: false, Windows: 2},
+	}
+
+	tests := []struct {
+		name      string
+		substring string
+		sessions  []Session
+		wantNames []string
+	}{
+		{
+			name:      "exact match",
+			substring: "webapp",
+			sessions:  sessions,
+			wantNames: []string{"webapp"},
+		},
+		{
+			name:      "substring matches multiple",
+			substring: "web",
+			sessions:  sessions,
+			wantNames: []string{"webapp", "web-api"},
+		},
+		{
+			name:      "no match",
+			substring: "nonexistent",
+			sessions:  sessions,
+			wantNames: nil,
+		},
+		{
+			name:      "empty sessions",
+			substring: "web",
+			sessions:  nil,
+			wantNames: nil,
+		},
+		{
+			name:      "empty substring matches all",
+			substring: "",
+			sessions:  sessions,
+			wantNames: []string{"webapp", "web-api", "build"},
+		},
+		{
+			name:      "single character match",
+			substring: "b",
+			sessions:  sessions,
+			wantNames: []string{"webapp", "web-api", "build"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := FindSession(tt.substring, tt.sessions)
+			if len(got) != len(tt.wantNames) {
+				t.Fatalf("got %d matches, want %d", len(got), len(tt.wantNames))
+			}
+			for i, s := range got {
+				if s.Name != tt.wantNames[i] {
+					t.Errorf("match[%d].Name = %q, want %q", i, s.Name, tt.wantNames[i])
+				}
+			}
+		})
+	}
+}
+
 func TestClassifyError_NoServer(t *testing.T) {
 	err := &exec.ExitError{Stderr: []byte("error connecting to /tmp/tmux-501/default (no server running on /tmp/tmux-501/default)")}
 	got := classifyError(err)

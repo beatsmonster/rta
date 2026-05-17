@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
-	"strings"
 
 	"rta/internal/tmux"
 
@@ -21,30 +21,35 @@ var attachCmd = &cobra.Command{
 func attachToSession(name string) error {
 	sessions, err := tmux.ListSessions()
 	if err != nil {
+		if errors.Is(err, tmux.ErrNoServer) {
+			return fmt.Errorf("no tmux sessions found (tmux server is not running)")
+		}
+		if errors.Is(err, tmux.ErrNoSessions) {
+			return fmt.Errorf("no tmux sessions found")
+		}
 		return fmt.Errorf("listing sessions: %w", err)
 	}
-
-	var matches []tmux.Session
-	for _, s := range sessions {
-		if strings.Contains(s.Name, name) {
-			matches = append(matches, s)
-		}
+	if len(sessions) == 0 {
+		return fmt.Errorf("no tmux sessions found")
 	}
+
+	matches := tmux.FindSession(name, sessions)
 
 	switch len(matches) {
 	case 0:
-		fmt.Println("No sessions matching:", name)
-		if len(sessions) > 0 {
-			fmt.Println("\nAvailable sessions:")
-			for _, s := range sessions {
-				fmt.Printf("  %s\n", s.Name)
-			}
+		fmt.Printf("No sessions matching %q\n", name)
+		fmt.Println("\nAvailable sessions:")
+		for _, s := range sessions {
+			fmt.Printf("  %s\n", s.Name)
 		}
 		return fmt.Errorf("no matching session")
 	case 1:
-		return tmux.AttachSession(matches[0].Name)
+		if err := tmux.AttachSession(matches[0].Name); err != nil {
+			return fmt.Errorf("attaching to session %q: %w", matches[0].Name, err)
+		}
+		return nil
 	default:
-		fmt.Println("Multiple sessions match:", name)
+		fmt.Printf("Multiple sessions match %q — be more specific:\n", name)
 		for _, s := range matches {
 			fmt.Printf("  %s\n", s.Name)
 		}
