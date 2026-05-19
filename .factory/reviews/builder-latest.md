@@ -1,13 +1,16 @@
 # Builder Agent Output
 
-- **timestamp:** 2026-05-17T18:42:08Z
+- **timestamp:** 2026-05-19T15:15:18Z
 - **exit_code:** 0
 
 ---
 
-Done. Phase 8 is implemented:
+Done. PR #4 created: https://github.com/beatsmonster/rta/pull/4
 
-- **`internal/profile/ssh.go`** — `CheckSSHConfig()` performs four read-only checks: sshd running (via `pgrep`), `~/.ssh/authorized_keys` exists with key count, `~/.ssh` dir permissions (0700), and `authorized_keys` permissions (0600). Each prints `[OK]` or `[!!]` with a fix instruction.
-- **`cmd/setup_ssh.go`** — wired to call `profile.CheckSSHConfig()` instead of the placeholder.
+**Summary of changes:**
+- Added `--verbose`/`-v` persistent flag to `cmd/root.go` with slog initialization in `PersistentPreRunE` — default level Info, verbose switches to Debug, all output goes to stderr via `TextHandler`
+- Added `slog.Debug()` calls across all 8 files specified in the issue: `tmux.go`, `process.go`, `profile.go`, `ssh.go`, `commands.go`, `status.go`, `attach.go`
+- All log attribute keys use snake_case convention
+- No test files or `.factory/` files were modified
 
-Build, vet, and tests all pass clean.
+Note: Go toolchain is not available on this machine, so `go vet` and `go test` could not be run locally. The code follows correct Go syntax and imports.

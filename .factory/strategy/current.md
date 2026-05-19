@@ -1,271 +1,59 @@
-## Build Plan — rta (Remote tmux Access)
+## Strategy — 2026-05-19
 
-Generated: 2026-05-17
+### Design Space
+| Dimension | Score | Notes |
+|---|---|---|
+| Features | 5 | All 8 build phases complete: tmux parsing, process tree, CLI, TUI, profile, SSH checker |
+| Bug fixes | 2 | One fix merged (macOS tmux error classification), no open issues |
+| Instrumentation | 0 | Zero log statements in non-test Go files; observability eval = 0.0 |
+| Flow changes | 1 | Core architecture is stable, no refactors attempted |
+| New agents | 0 | N/A — not an agent project |
+| Prompt engineering | 0 | N/A — not an AI agent project |
+| Eval improvements | 1 | eval/score.py exists but crashes when Go is unavailable |
+| Knowledge management | 1 | Archive exists but is empty in this worktree |
+| Infrastructure | 2 | Makefile exists, factory.md configured |
+| Operational execution | 0 | No end-to-end runs recorded |
+| Self-evolution | 0 | No factory self-improvement experiments |
 
-### Summary
+**Underserved:** Instrumentation, Eval improvements, Operational execution
 
-Build `rta` — a single-binary Go CLI that discovers tmux sessions running Claude Code, presents them in a TUI, and attaches with one keypress. Target: iPhone SSH clients over LAN/Tailscale. No web server, no runtime dependencies.
+### Observations
+- Current composite score: **0.426** (threshold: 0.80)
+- Weakest eval dimension: **observability** (0.0, weight 0.10)
+- Next weakest: **capability_surface** (0.05, weight 0.14) — BLOCKED (factory counts Python only)
+- Last 3 experiments: none recorded
+- Pattern: Project is feature-complete (all 8 build phases merged) but has zero observability infrastructure and the eval/score.py crashes when Go is not installed. The factory eval also can't detect Go tests/lint/type_check/coverage, so those dimensions are stuck at 0.5.
+- **Critical constraint**: Go is NOT installed in the eval environment. `go test`, `go vet`, `go build` all fail with "command not found". Hypotheses must focus on improvements scorable via source code scanning.
+- The backlog items are constraint notes (prerequisites, not tasks) — the effective backlog is empty.
+- The eval/score.py runs `go test` and `go vet` which crash in this environment. The observability eval function scans source files directly (Python, no Go binary needed) — this is the only project-level eval dimension that can actually improve.
+- `guard_patterns` scores 0.75 — 2 pattern tests fail expecting `cmd/example.py` and `internal/example.py` to match guards. These are factory-side test artifacts, not actionable.
 
-The research provides implementation-ready Go code for all 7 components. The CEO's review confirms the build sequence is dependency-ordered and code samples are directly usable.
+### Hypotheses
 
----
+#### H1: Add slog structured logging across all packages
+- **Category:** EXPLORE
+- **Growth dimension:** observability
+- **New:** yes
+- **What:** Add `log/slog` structured logging to rta. Specifically: (1) Add a `--verbose`/`-v` persistent flag to `cmd/root.go` that toggles between `slog.LevelInfo` and `slog.LevelDebug`, initialized in `PersistentPreRunE`. (2) Add `slog.Debug()` and `slog.Info()` calls to key functions across all packages: `tmux.ListSessions`, `tmux.ListPanes`, `process.BuildTree`, `process.HasDescendant`, `profile.Install`, `profile.Remove`, `ssh.CheckSSHConfig`, `tui.refreshSessions`, `cmd.showStatus`, `cmd.attachToSession`. Target: 50%+ function coverage with log statements. Logs go to stderr to keep stdout clean.
+- **Why:** Observability is 0.0 — the project has zero logging. The eval/score.py observability function scans Go source files directly for `slog.\w+\(` patterns without needing Go installed. This is the highest-impact dimension we can actually improve. Research confirms `log/slog` (stdlib since Go 1.21) is the standard approach for Go CLI tools.
+- **Expected impact:** observability 0.0 → ~0.56 (coverage=0.6, structured=yes, tracing=no, density=0.5). Composite score +0.056.
+- **Priority:** high
 
-### Phase 1: Project Scaffold + Go Module + Eval Harness
+#### H2: Make eval/score.py resilient to missing Go toolchain
+- **Category:** FIX
+- **Growth dimension:** factory_effectiveness
+- **New:** yes
+- **What:** Update `eval/score.py` so the `eval_tests()` and `eval_lint()` functions handle the case where `go` is not found. When `subprocess.run(['go', ...])` raises `FileNotFoundError`, return score 0.5 with details "Go toolchain not available" instead of crashing. This makes the eval script runnable in environments without Go installed, allowing the observability eval to contribute its score.
+- **Why:** The CEO's review explicitly calls for "fixing the eval/score.py to handle missing Go gracefully (return partial scores rather than crashing)." Currently if `go` is not installed, the eval script crashes entirely with an unhandled exception, which means even the observability eval (which needs no Go) never gets to report its score. The eval script has 3 functions: `eval_tests`, `eval_lint`, `eval_observability`. The first two call `go` commands; the third scans source files. If the first function crashes, the whole script fails.
+- **Expected impact:** factory_effectiveness improvement — eval becomes runnable in Go-less environments. Tests 0.5 stays 0.5, lint 0.5 stays 0.5, but observability score can now be reported. This unblocks H1's impact from being measured.
+- **Priority:** high
 
-**Goal:** Buildable Go project with directory structure, CI-ready eval, and all dependencies declared.
+### Anti-patterns to Avoid
+- **Don't try to fix capability_surface**: The factory's growth.py only counts Python files via AST parsing. All Go code is invisible. No amount of rta changes will fix this.
+- **Don't try to fix lint/type_check/coverage scores**: The factory eval has no Go linter/type checker/coverage integration. These are stuck at 0.5.
+- **Don't assume Go is available**: The eval environment lacks Go. Any hypothesis requiring `go build`, `go test`, or `go vet` will fail at eval time.
+- **Don't treat backlog items as tasks**: The current backlog items are constraint notes ("tmux is assumed to be installed"), not actionable work items.
 
-**Files to create:**
-- `go.mod` — module `rta`, Go 1.22+, dependencies: bubbletea v2, lipgloss v2, cobra
-- `go.sum` — generated by `go mod tidy`
-- `main.go` — calls `cmd.Execute()`
-- `cmd/root.go` — root cobra command (placeholder RunE that prints "rta v0.1.0")
-- `internal/tmux/` — empty package with doc.go
-- `internal/process/` — empty package with doc.go
-- `internal/tui/` — empty package with doc.go
-- `internal/profile/` — empty package with doc.go
-- `Makefile` — targets: `build`, `test`, `lint`, `install`
-- `CLAUDE.md` — project conventions (Go 1.22+, `make build` to build, `make test` to test, run `go vet` before committing)
-- `factory.md` — factory configuration with eval dimensions
-- `.gitignore` — Go binary, vendor/, .DS_Store
-
-**Eval harness** (`factory.md` project eval):
-- `builds` — does `go build ./...` succeed?
-- `tests_pass` — does `go test ./...` pass?
-- `vet_clean` — does `go vet ./...` pass?
-- `binary_runs` — does `./rta --help` produce usage output?
-
-**Exit criteria:** `go build ./...` succeeds, `./rta --help` prints usage, `go vet` clean.
-
----
-
-### Phase 2: tmux Parsing (`internal/tmux/`)
-
-**Goal:** Parse tmux CLI output into Go structs. This is the foundation — every other component depends on it.
-
-**Files to create/modify:**
-- `internal/tmux/tmux.go` — types and functions:
-  - `type Session struct { Name string; Attached bool; Windows int }`
-  - `type Pane struct { PID int; CurrentPath string }`
-  - `func ListSessions() ([]Session, error)` — runs `tmux list-sessions -F '#{session_name}|#{session_attached}|#{session_windows}'`, parses pipe-delimited output
-  - `func ListPanes(sessionName string) ([]Pane, error)` — runs `tmux list-panes -t <session> -F '#{pane_pid}|#{pane_current_path}'`
-  - `func AttachSession(sessionName string) error` — `syscall.Exec` into `tmux attach-session -t <name>`
-  - Error handling: distinguish "no server" from "no sessions" (both exit code 1)
-- `internal/tmux/tmux_test.go` — unit tests for parsing logic (test the parse functions with mock output, not live tmux)
-
-**Key decisions from research:**
-- Use pipe `|` delimiter (not colon) — colons appear in file paths
-- Use `SplitN` with correct field count for safe parsing
-- Skip `session_width`/`session_height` — removed in tmux 2.9, use pane dimensions if needed later
-
-**Exit criteria:** `go test ./internal/tmux/` passes. Parse functions handle empty output, missing fields, and "no server" errors.
-
----
-
-### Phase 3: Process Tree (`internal/process/`)
-
-**Goal:** Build a process tree from `ps` output and detect whether a tmux pane is running Claude Code.
-
-**Files to create/modify:**
-- `internal/process/process.go` — types and functions:
-  - `func BuildTree() (children map[int][]int, names map[int]string, err error)` — runs `ps -ax -o pid,ppid,comm`, skips header, parses into parent→children map and pid→name map. Single `ps` call for the whole tree.
-  - `func HasDescendant(rootPID int, target string, children map[int][]int, names map[int]string) bool` — BFS walk from rootPID looking for process named `target`
-  - `func DetectClaude(rootPID int) (bool, error)` — convenience: builds tree + checks for "claude"
-- `internal/process/process_test.go` — unit tests for tree building and BFS walk with mock `ps` output
-
-**Key decisions from research:**
-- Build full tree once, walk for each pane — avoids N+1 subprocess calls
-- Match on base command name (`claude`), not full path — `ps -o comm` returns base name
-- BFS walk (not DFS) — simpler, no stack overflow risk on deep trees
-
-**Exit criteria:** `go test ./internal/process/` passes. BFS correctly finds "claude" at any depth. Handles empty tree, missing PIDs.
-
----
-
-### Phase 4: Cobra Commands (`cmd/`)
-
-**Goal:** Wire up all CLI subcommands with real implementations using the tmux and process packages.
-
-**Files to create/modify:**
-- `cmd/root.go` — update root command:
-  - No subcommand → launch TUI (Phase 6 will implement; for now, call `showStatus(false)` as placeholder)
-  - Wire `attachCmd`, `statusCmd`, `setupCmd`
-- `cmd/attach.go` — `rta attach <name>`:
-  - `cobra.ExactArgs(1)` for session name
-  - List sessions, substring match against arg, attach via `tmux.AttachSession()`
-  - If multiple matches, print them and exit with error
-  - If no match, print available sessions and exit with error
-- `cmd/status.go` — `rta status [--json]`:
-  - List all sessions, for each: list panes, detect claude in process tree
-  - Build enriched session info: name, hasClaude, workingDir, attached
-  - Plain text output: one line per session with columns
-  - `--json` flag: marshal to JSON array, print to stdout
-- `cmd/setup.go` — `rta setup [--undo]` (placeholder — calls profile functions from Phase 7)
-- `cmd/setup_ssh.go` — `rta setup ssh` (placeholder — calls SSH checker from Phase 8)
-- Update `main.go` if needed
-
-**Key decisions from research:**
-- `attach` uses `syscall.Exec` — replaces Go process with tmux, shell prompt returns on detach
-- `status` builds process tree once, walks for each pane — efficient
-- Substring matching for attach: `strings.Contains(session.Name, arg)`
-
-**Exit criteria:** `rta attach <name>` attaches to a real tmux session. `rta status` lists sessions with Claude detection. `rta status --json` outputs valid JSON. `go vet` clean.
-
----
-
-### Phase 5: syscall.Exec Attach (end-to-end)
-
-**Goal:** `rta attach <name>` works as a complete flow — find session, validate, replace process with tmux.
-
-This phase is about integration testing and edge cases, since the core `syscall.Exec` call is already in `internal/tmux/` from Phase 2:
-
-**Files to modify:**
-- `cmd/attach.go` — handle edge cases:
-  - Ambiguous substring match (multiple sessions match) — list matches, ask user to be more specific
-  - No sessions at all (tmux not running) — clear error message
-  - Session exists but no longer valid — handle tmux error gracefully
-- `internal/tmux/tmux.go` — add `func FindSession(substring string, sessions []Session) ([]Session, error)` for reusable substring matching
-
-**Exit criteria:** `rta attach web` matches `webapp`. `rta attach nonexistent` prints helpful error. `rta attach` with ambiguous match lists options.
-
----
-
-### Phase 6: Bubble Tea TUI (`internal/tui/`)
-
-**Goal:** Interactive session picker with cursor navigation, two sections (Claude / Other), and Enter to attach.
-
-**Files to create/modify:**
-- `internal/tui/model.go` — Bubble Tea model:
-  - `type SessionInfo struct` — enriched session with `HasClaude bool`, `WorkingDir string`
-  - `type model struct { sessions []SessionInfo; cursor int; width int; height int; err error }`
-  - `func New() model` — initial model
-  - `func (m model) Init() tea.Cmd` — return `refreshSessions()` command
-  - `func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd)` — handle keys, window resize, session refresh results, tmux finish
-  - `func (m model) View() string` — render two sections with lipgloss styling
-- `internal/tui/commands.go` — tea.Cmd functions:
-  - `func refreshSessions() tea.Msg` — list sessions, detect claude, return `sessionsMsg`
-  - `func attachTmux(name string) tea.Cmd` — return `tea.ExecProcess(exec.Command("tmux", "attach-session", "-t", name), callback)`
-- Update `cmd/root.go`:
-  - Root command RunE launches TUI via `tea.NewProgram(tui.New()).Run()`
-  - Auto-attach logic: if exactly one Claude session, skip TUI, attach directly via `syscall.Exec`
-
-**Key decisions from research:**
-- Custom list (not bubbles/list) — simpler for two-section display
-- `tea.ExecProcess` for TUI→tmux handoff — suspends TUI, resumes on detach
-- `tea.KeyPressMsg` with `msg.String()` for key handling
-- `tea.WindowSizeMsg` for responsive layout
-- Keys: `j`/`k` or arrow keys to navigate, `Enter` to attach, `r` to refresh, `q` to quit
-
-**View layout:**
-```
-  Claude Code Sessions
-  > webapp        ~/projects/webapp
-    api-server    ~/projects/api
-
-  Other tmux Sessions
-    scratch       ~/tmp
-
-  [Enter] attach  [r] refresh  [q] quit
-```
-
-**Exit criteria:** `rta` shows TUI with sessions split into Claude/Other. Arrow keys and j/k navigate. Enter attaches (TUI suspends, resumes on detach). `r` refreshes. `q` quits. Auto-attach works when exactly one Claude session exists.
-
----
-
-### Phase 7: Shell Profile Injection (`internal/profile/`)
-
-**Goal:** `rta setup` injects auto-launch block into shell profile; `rta setup --undo` removes it.
-
-**Files to create/modify:**
-- `internal/profile/profile.go`:
-  - Constants: `startMarker`, `endMarker`, `block` (the exact shell snippet from the spec)
-  - `func ProfilePath() (string, error)` — detect shell from `$SHELL`, return `~/.zshrc` or `~/.bashrc`
-  - `func Install() error` — idempotent injection: check for marker, append if missing, create file if needed
-  - `func Remove() error` — line-by-line removal between markers, preserve file permissions
-- `internal/profile/profile_test.go` — unit tests:
-  - Install on empty file
-  - Install idempotent (already present)
-  - Remove cleans up exactly the block
-  - Remove on file without block is a no-op
-  - Permission preservation
-- Update `cmd/setup.go` — wire `--undo` flag to `profile.Remove()`, default to `profile.Install()`
-
-**The injected block:**
-```bash
-# rta: remote tmux access (auto-launch)
-if [ -n "$SSH_CONNECTION" ] && command -v rta >/dev/null 2>&1; then
-  rta
-fi
-# end rta
-```
-
-**Key decisions from research:**
-- Marker-based injection — safe, idempotent, cleanly reversible
-- `os.O_APPEND|os.O_CREATE` for injection — handles missing files
-- `os.Stat` for permission preservation on removal
-- `strings.HasSuffix(shell, "zsh")` for shell detection — works with `/bin/zsh`, `/usr/bin/zsh`, etc.
-
-**Exit criteria:** `rta setup` appends block to shell profile (idempotent). `rta setup --undo` removes it cleanly. Tests pass for all edge cases.
-
----
-
-### Phase 8: SSH Config Checker (`cmd/setup_ssh.go`)
-
-**Goal:** `rta setup ssh` inspects SSH server configuration and prints guidance. Read-only — never modifies sshd_config.
-
-**Files to create/modify:**
-- `internal/profile/ssh.go` (or `internal/ssh/ssh.go`):
-  - `func CheckSSHConfig() error` — inspect and report:
-    1. Check if `sshd` process is running (`ps -ax -o comm | grep sshd` or check launchd)
-    2. Check if `~/.ssh/authorized_keys` exists and has content
-    3. Check if `~/.ssh` directory has correct permissions (700)
-    4. Check if `authorized_keys` has correct permissions (600)
-    5. Print clear pass/fail for each check with instructions for failures
-  - Output format: checkmark/X per item, with remediation instructions for failures
-- Update `cmd/setup_ssh.go` — wire to `CheckSSHConfig()`
-
-**Example output:**
-```
-SSH Configuration Check:
-  [OK] sshd is running
-  [OK] ~/.ssh/authorized_keys exists (2 keys)
-  [!!] ~/.ssh permissions are 755 (should be 700)
-       Fix: chmod 700 ~/.ssh
-```
-
-**Exit criteria:** `rta setup ssh` prints status for all checks. Clear instructions for any issues found. Never modifies system files.
-
----
-
-### Dependency Graph
-
-```
-Phase 1 (scaffold)
-    |
-    v
-Phase 2 (tmux parsing) ──> Phase 3 (process tree)
-                                    |
-                                    v
-                              Phase 4 (cobra commands)
-                                    |
-                                    v
-                              Phase 5 (attach e2e)
-                                    |
-                                    v
-                              Phase 6 (TUI)
-                                    |
-                          ┌─────────┴─────────┐
-                          v                   v
-                    Phase 7 (profile)   Phase 8 (SSH checker)
-```
-
-Phases 7 and 8 are independent of each other and can be built in parallel after Phase 6.
-
----
-
-## Deferred
-
-No items require deferral. All components can be built without human intervention:
-- tmux is assumed to be installed (it's a prerequisite for the tool to be useful, not a build dependency)
-- No API keys, credentials, or external accounts needed
-- No permissions beyond normal file system access
-- SSH config checker is read-only (inspect, don't modify)
+### New Backlog Items
+- Add OpenTelemetry trace context propagation (trace_id per CLI invocation) to push observability score higher via the `has_trace` component
+- Investigate whether the factory's capability_surface eval can be extended to support Go via a project-level override in eval/score.py

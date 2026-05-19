@@ -9,10 +9,24 @@ source: factory-archivist
 # Factory: remote-tmux-access
 
 ## Status
-- **State**: complete (all 8 phases delivered)
-- **Current Score**: feature-complete CLI — 1503 lines Go, 25 tests passing, 8/8 phases, 100% keep rate
-- **Experiments Run**: 8
-- **Kept**: 8, **Reverted**: 0
+- **State**: optimization cycle BLOCKED — score ceiling unreachable for Go projects
+- **Current Score**: 0.5011 (threshold: 0.80, max achievable ~0.56)
+- **Score Breakdown**: tests=1.0, lint=0.5, type_check=0.5, coverage=0.5, guard_patterns=0.75, config_parser=1.0, capability_surface=0.05, experiment_diversity=0.5, observability=0.0, research_grounding=0.52, factory_effectiveness=0.5
+- **Build**: feature-complete CLI — 1503+ lines Go, 25 tests passing, 8/8 phases, 100% keep rate
+- **Optimization Experiments**: 2 (both REVERT)
+- **Build Experiments**: 8 (all KEEP)
+- **Key Constraint**: Factory eval is Python-centric — score ceiling ~0.56 for Go projects. All optimization experiments will be reverted until eval gains Go support or threshold is lowered.
+
+## Current Strategy (2026-05-19)
+
+**BLOCKED** — No viable hypotheses remain within the factory's scoring system.
+
+Two hypotheses were attempted, both reverted:
+
+1. **H2 (eval resilience):** Fix eval/score.py to handle missing Go gracefully — **REVERT** (eval_immutable guard violation, eval/score.py outside declared scope)
+2. **H1 (observability):** Add slog structured logging with --verbose flag — **REVERT** (code was CLEAN but score 0.5011 < 0.80 threshold; threshold unreachable for Go)
+
+**Root cause**: The factory eval cannot score Go projects above ~0.56 due to Python-only dimensions (capability_surface, lint, type_check, coverage, observability) collectively weighted at ~0.60.
 
 ## Project Summary
 
@@ -26,12 +40,14 @@ source: factory-archivist
 4. **Discovery + attachment only** — rta never starts, stops, wraps, or sends input to Claude Code. It's a pure tmux session discovery and attachment layer.
 5. **No state on disk** — tmux is the sole source of truth. No database, no config files.
 6. **Defer Charm deps** — bubbletea/lipgloss not added to go.mod until Phase 6, avoiding unused dependency warnings during early phases. Strategy validated — clean addition in Phase 6.
+7. **stdlib slog for logging** — Uses Go's built-in log/slog (no external deps), TextHandler to stderr, --verbose flag for debug output. Added in optimization experiment #2 (reverted due to score threshold, not code quality).
 
 ## Architecture
 
 - **Language**: Go 1.24, single static binary
 - **TUI**: Bubble Tea v2 + Lipgloss v2 (Charm ecosystem)
 - **CLI**: Cobra for subcommand routing
+- **Logging**: log/slog with --verbose flag (TextHandler to stderr) — implemented but reverted
 - **tmux interaction**: All via `tmux` CLI subprocess calls (list-sessions, list-panes, attach-session)
 - **Process detection**: Walk process tree via `ps` (macOS) or `/proc` (Linux) to find `claude` binary
 - **Profile injection**: Marker-based idempotent block install/remove in ~/.zshrc or ~/.bashrc
@@ -50,28 +66,28 @@ source: factory-archivist
 | 7 | Shell profile injection (`internal/profile/`) | **DONE** | 340 | 11 | `c554073` |
 | 8 | SSH config checker (`internal/profile/ssh.go`) | **DONE** | 110 | — | `b002dfe` |
 
-**Totals:** 1503 lines Go, 25 tests, 8/8 phases complete (100%).
+**Totals:** 1503+ lines Go, 25 tests, 8/8 phases complete (100%).
 
 ### Dependency Graph
 
 ```
-Phase 1 (scaffold) ✅
+Phase 1 (scaffold)
     |
     v
-Phase 2 (tmux) ✅ ──> Phase 3 (process tree) ✅
-                            |
-                            v
-                      Phase 4 (cobra) ✅
-                            |
-                            v
-                      Phase 5 (attach e2e) ✅
-                            |
-                            v
-                      Phase 6 (TUI) ✅
-                            |
-                  +---------+---------+
-                  v                   v
-            Phase 7 (profile) ✅   Phase 8 (SSH) ✅
+Phase 2 (tmux) --> Phase 3 (process tree)
+                        |
+                        v
+                  Phase 4 (cobra)
+                        |
+                        v
+                  Phase 5 (attach e2e)
+                        |
+                        v
+                  Phase 6 (TUI)
+                        |
+              +---------+---------+
+              v                   v
+        Phase 7 (profile)   Phase 8 (SSH)
 ```
 
 ## Research Sources (Implementation)
@@ -89,6 +105,13 @@ Phase 2 (tmux) ✅ ──> Phase 3 (process tree) ✅
 - [Architecture patterns](sources/architecture-patterns.md) — Control mode, PTY wrapper, relay, direct exec
 - [Pitfalls from research](sources/pitfalls-from-research.md) — Resize, platform diffs, session discovery
 
+## Research Sources (Optimization Cycle — 2026-05-19)
+
+- [Go env constraint](sources/go-env-constraint.md) — Go not installed in eval env, tests/lint/build all fail
+- [Factory eval Python bias](sources/factory-eval-python-bias.md) — capability_surface, lint, coverage all Python-only
+- [slog observability strategy](sources/slog-observability-strategy.md) — Primary actionable dimension, score formula, recommended approach
+- [Backlog items are constraints](sources/backlog-items-are-constraints.md) — Backlog is informational, effective backlog is empty
+
 ## Ideation Timeline
 
 - **2026-05-17 04:19** — Researcher agent started; completed at 04:24
@@ -97,20 +120,25 @@ Phase 2 (tmux) ✅ ──> Phase 3 (process tree) ✅
 - **2026-05-17 13:00** — Distiller final pass (Go rewrite, Claude-only, explicit auto-launch); completed at 13:01
 - **2026-05-17** — Strategy approved, spec finalized, implementation research completed
 - **2026-05-17** — 8-phase build plan created by strategist, CEO-approved
-- **2026-05-17** — Phase 1 scaffold built and CEO-approved (PROCEED)
-- **2026-05-17** — Phase 2 tmux parsing built (KEEP, 273 lines, 11 tests)
-- **2026-05-17** — Phase 3 process tree built (KEEP, 204 lines, 8 tests)
-- **2026-05-17** — Phase 4 Cobra commands built (KEEP, 230 lines, macOS bugfix included)
-- **2026-05-17** — Phase 5 attach e2e built (KEEP, 96 lines, 6 tests, FindSession extracted)
-- **2026-05-17** — Phase 6 Bubble Tea TUI built (KEEP, 309 lines, session picker + auto-attach)
-- **2026-05-17** — Phase 7 shell profile injection built (KEEP, 340 lines, 11 tests, marker-based idempotency)
-- **2026-05-17** — Phase 8 SSH config checker built (KEEP, 110 lines, final phase — BUILD COMPLETE)
+- **2026-05-17** — Phases 1-8 all built and kept (100% keep rate)
 
-## Cycle Summary
+## Cycle Summaries
+
+**Optimization cycle 2026-05-19 COMPLETE.** 2 experiments attempted, both reverted. Score ceiling (~0.56) unreachable for Go projects vs 0.80 threshold. See [full cycle summary](strategies/remote-tmux-access-2026-05-19-cycle-summary.md).
 
 **Build cycle 2026-05-17 COMPLETE.** All 8 phases delivered with 100% keep rate. See [full cycle summary](strategies/remote-tmux-access-2026-05-17-cycle-summary.md).
 
-## Recent Experiments
+## Strategy History
+
+- **2026-05-19** — Optimization strategy approved: H2 (eval resilience) then H1 (slog logging). Both reverted. See [strategy snapshot](strategies/remote-tmux-access-2026-05-19.md).
+- **2026-05-17** — 8-phase build plan approved and executed. See [build plan](strategies/remote-tmux-access-2026-05-17-build-plan.md).
+
+## Recent Experiments (Optimization Cycle)
+
+- Experiment #1 (opt) — Handle missing Go in eval/score.py (**REVERT**, scope violation: eval/score.py outside declared scope, score 0.426 unchanged)
+- Experiment #2 (opt) — Add slog structured logging with --verbose flag (**REVERT**, code was CLEAN but score 0.5011 < 0.80 threshold; systemic — threshold unreachable for Go projects)
+
+## Recent Experiments (Build Cycle)
 
 - Experiment #1 — Phase 1 scaffold (**KEEP**, scaffold complete)
 - Experiment #2 — Phase 2 tmux parsing (**KEEP**, 273 lines, 11 tests passing)
