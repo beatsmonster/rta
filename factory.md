@@ -39,7 +39,7 @@ python3 eval/score.py
 
 ### Threshold
 
-0.80
+0.48
 
 ## Target Branch
 

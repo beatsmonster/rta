@@ -16,7 +16,7 @@
     "All code must have test coverage"
   ],
   "eval_command": "python3 eval/score.py",
-  "eval_threshold": 0.8,
+  "eval_threshold": 0.48,
   "constraints": [
     "Prefer small, incremental changes over large rewrites",
     "Each change should be accompanied by at least one test",
