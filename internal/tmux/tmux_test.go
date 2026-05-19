@@ -1,7 +1,9 @@
 package tmux
 
 import (
+	"fmt"
 	"os/exec"
+	"strings"
 	"testing"
 )
 
@@ -188,6 +190,92 @@ func TestFindSession(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestListSessionsSuccess(t *testing.T) {
+	orig := RunListSessions
+	defer func() { RunListSessions = orig }()
+	RunListSessions = func() ([]byte, error) { return []byte("dev|1|2\nbuild|0|1\n"), nil }
+
+	sessions, err := ListSessions()
+	if err != nil {
+		t.Fatalf("ListSessions: %v", err)
+	}
+	if len(sessions) != 2 || sessions[0].Name != "dev" || !sessions[0].Attached {
+		t.Errorf("unexpected sessions: %+v", sessions)
+	}
+}
+
+func TestListSessionsError(t *testing.T) {
+	orig := RunListSessions
+	defer func() { RunListSessions = orig }()
+	RunListSessions = func() ([]byte, error) {
+		return nil, &exec.ExitError{Stderr: []byte("no server running")}
+	}
+
+	if _, err := ListSessions(); err != ErrNoServer {
+		t.Errorf("got %v, want ErrNoServer", err)
+	}
+}
+
+func TestListPanesSuccess(t *testing.T) {
+	orig := RunListPanes
+	defer func() { RunListPanes = orig }()
+	RunListPanes = func(name string) ([]byte, error) { return []byte("12345|/home/user/project\n"), nil }
+
+	panes, err := ListPanes("dev")
+	if err != nil {
+		t.Fatalf("ListPanes: %v", err)
+	}
+	if len(panes) != 1 || panes[0].PID != 12345 {
+		t.Errorf("unexpected panes: %+v", panes)
+	}
+}
+
+func TestListPanesError(t *testing.T) {
+	orig := RunListPanes
+	defer func() { RunListPanes = orig }()
+	RunListPanes = func(name string) ([]byte, error) { return nil, fmt.Errorf("tmux error") }
+
+	if _, err := ListPanes("dev"); err == nil {
+		t.Error("expected error")
+	}
+}
+
+func TestAttachSessionSuccess(t *testing.T) {
+	origLP := LookPath
+	origExec := ExecSyscall
+	defer func() { LookPath = origLP; ExecSyscall = origExec }()
+
+	LookPath = func(file string) (string, error) { return "/usr/bin/tmux", nil }
+	ExecSyscall = func(binary string, args []string, env []string) error {
+		if binary != "/usr/bin/tmux" || args[3] != "test-session" {
+			t.Errorf("unexpected args: binary=%q args=%v", binary, args)
+		}
+		return nil
+	}
+
+	if err := AttachSession("test-session"); err != nil {
+		t.Fatalf("AttachSession: %v", err)
+	}
+}
+
+func TestAttachSessionLookPathError(t *testing.T) {
+	origLP := LookPath
+	defer func() { LookPath = origLP }()
+	LookPath = func(file string) (string, error) { return "", fmt.Errorf("not found") }
+
+	err := AttachSession("test")
+	if err == nil || !strings.Contains(err.Error(), "tmux not found") {
+		t.Errorf("expected 'tmux not found', got: %v", err)
+	}
+}
+
+func TestClassifyErrorNonExitError(t *testing.T) {
+	err := classifyError(fmt.Errorf("generic error"))
+	if err == ErrNoServer || err == ErrNoSessions {
+		t.Errorf("expected generic wrapped error, got %v", err)
 	}
 }
 

@@ -57,7 +57,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "r":
 			return m, refreshSessions
-		case "q", "ctrl+c":
+		case "q", "ctrl+c", "escape":
 			return m, tea.Quit
 		}
 	case tea.WindowSizeMsg:
@@ -90,11 +90,11 @@ var (
 
 func (m model) View() tea.View {
 	if m.err != nil {
-		return tea.NewView(errStyle.Render(fmt.Sprintf("Error: %v", m.err)) + "\n\n" + helpStyle.Render("[r] retry  [q] quit"))
+		return tea.NewView(errStyle.Render(fmt.Sprintf("Error: %v", m.err)) + "\n\n" + helpStyle.Render("[r] retry  [esc/q] quit"))
 	}
 
 	if len(m.sessions) == 0 {
-		return tea.NewView("No tmux sessions found.\n\n" + helpStyle.Render("[r] refresh  [q] quit"))
+		return tea.NewView("No tmux sessions found.\n\n" + helpStyle.Render("[r] refresh  [esc/q] quit"))
 	}
 
 	var claudeSessions, otherSessions []int
@@ -130,7 +130,7 @@ func (m model) View() tea.View {
 	}
 
 	b.WriteString("\n")
-	b.WriteString(helpStyle.Render("[enter] attach  [r] refresh  [q] quit"))
+	b.WriteString(helpStyle.Render("[enter] attach  [r] refresh  [esc/q] quit"))
 
 	return tea.NewView(b.String())
 }

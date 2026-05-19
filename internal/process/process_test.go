@@ -1,6 +1,7 @@
 package process
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -92,10 +93,10 @@ func TestHasDescendantMissingPID(t *testing.T) {
 }
 
 func TestBuildTreeWithMock(t *testing.T) {
-	orig := runPS
-	defer func() { runPS = orig }()
+	orig := RunPS
+	defer func() { RunPS = orig }()
 
-	runPS = func() ([]byte, error) {
+	RunPS = func() ([]byte, error) {
 		return []byte(mockPSOutput), nil
 	}
 
@@ -111,11 +112,44 @@ func TestBuildTreeWithMock(t *testing.T) {
 	}
 }
 
-func TestDetectClaudeWithMock(t *testing.T) {
-	orig := runPS
-	defer func() { runPS = orig }()
+func TestBuildTreeError(t *testing.T) {
+	orig := RunPS
+	defer func() { RunPS = orig }()
+	RunPS = func() ([]byte, error) { return nil, fmt.Errorf("ps failed") }
 
-	runPS = func() ([]byte, error) {
+	if _, _, err := BuildTree(); err == nil {
+		t.Error("expected error from BuildTree")
+	}
+}
+
+func TestParseTreeShortFields(t *testing.T) {
+	children, names, err := parseTree([]byte("  PID  PPID COMM\n  100  200\n  300  400  bash\n"))
+	if err != nil {
+		t.Fatalf("parseTree: %v", err)
+	}
+	if len(names) != 1 || names[300] != "bash" {
+		t.Errorf("expected only pid 300, got names=%v", names)
+	}
+	if len(children[400]) != 1 {
+		t.Errorf("children[400] = %v, want [300]", children[400])
+	}
+}
+
+func TestDetectClaudeError(t *testing.T) {
+	orig := RunPS
+	defer func() { RunPS = orig }()
+	RunPS = func() ([]byte, error) { return nil, fmt.Errorf("ps failed") }
+
+	if _, err := DetectClaude(1); err == nil {
+		t.Error("expected error from DetectClaude")
+	}
+}
+
+func TestDetectClaudeWithMock(t *testing.T) {
+	orig := RunPS
+	defer func() { RunPS = orig }()
+
+	RunPS = func() ([]byte, error) {
 		return []byte(mockPSOutput), nil
 	}
 

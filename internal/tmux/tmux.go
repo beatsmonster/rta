@@ -24,10 +24,25 @@ type Pane struct {
 var ErrNoServer = fmt.Errorf("tmux: no server running")
 var ErrNoSessions = fmt.Errorf("tmux: no sessions")
 
+var RunListSessions = func() ([]byte, error) {
+	return exec.Command("tmux", "list-sessions",
+		"-F", "#{session_name}|#{session_attached}|#{session_windows}").Output()
+}
+
+var RunListPanes = func(sessionName string) ([]byte, error) {
+	return exec.Command("tmux", "list-panes",
+		"-t", sessionName,
+		"-F", "#{pane_pid}|#{pane_current_path}").Output()
+}
+
+var LookPath = exec.LookPath
+
+var ExecSyscall = func(binary string, args []string, env []string) error {
+	return syscall.Exec(binary, args, env)
+}
+
 func ListSessions() ([]Session, error) {
-	cmd := exec.Command("tmux", "list-sessions",
-		"-F", "#{session_name}|#{session_attached}|#{session_windows}")
-	out, err := cmd.Output()
+	out, err := RunListSessions()
 	if err != nil {
 		return nil, classifyError(err)
 	}
@@ -39,10 +54,7 @@ func ListSessions() ([]Session, error) {
 }
 
 func ListPanes(sessionName string) ([]Pane, error) {
-	cmd := exec.Command("tmux", "list-panes",
-		"-t", sessionName,
-		"-F", "#{pane_pid}|#{pane_current_path}")
-	out, err := cmd.Output()
+	out, err := RunListPanes(sessionName)
 	if err != nil {
 		return nil, fmt.Errorf("tmux list-panes: %w", err)
 	}
@@ -55,12 +67,12 @@ func ListPanes(sessionName string) ([]Pane, error) {
 
 func AttachSession(sessionName string) error {
 	slog.Debug("attaching to session", "session_name", sessionName)
-	binary, err := exec.LookPath("tmux")
+	binary, err := LookPath("tmux")
 	if err != nil {
 		return fmt.Errorf("tmux not found: %w", err)
 	}
 	args := []string{"tmux", "attach-session", "-t", sessionName}
-	return syscall.Exec(binary, args, os.Environ())
+	return ExecSyscall(binary, args, os.Environ())
 }
 
 func FindSession(substring string, sessions []Session) []Session {

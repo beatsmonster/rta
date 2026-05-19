@@ -10,6 +10,12 @@ import (
 	"strings"
 )
 
+var RunPgrep = func() ([]byte, error) {
+	return exec.Command("pgrep", "-x", "sshd").Output()
+}
+
+var GetHomeDir = os.UserHomeDir
+
 func CheckSSHConfig() error {
 	slog.Debug("starting SSH configuration check")
 	fmt.Println("SSH Configuration Check:")
@@ -24,7 +30,7 @@ func CheckSSHConfig() error {
 }
 
 func checkSSHD() {
-	out, err := exec.Command("pgrep", "-x", "sshd").Output()
+	out, err := RunPgrep()
 	if err != nil || len(strings.TrimSpace(string(out))) == 0 {
 		fmt.Println("  [!!] sshd is not running")
 		fmt.Println("       Fix: Enable Remote Login in System Settings > General > Sharing")
@@ -34,7 +40,7 @@ func checkSSHD() {
 }
 
 func checkAuthorizedKeys() {
-	home, err := os.UserHomeDir()
+	home, err := GetHomeDir()
 	if err != nil {
 		fmt.Printf("  [!!] cannot determine home directory: %v\n", err)
 		return
@@ -67,7 +73,7 @@ func checkAuthorizedKeys() {
 }
 
 func checkSSHDirPerms() {
-	home, err := os.UserHomeDir()
+	home, err := GetHomeDir()
 	if err != nil {
 		return
 	}
@@ -90,7 +96,7 @@ func checkSSHDirPerms() {
 }
 
 func checkAuthorizedKeysPerms() {
-	home, err := os.UserHomeDir()
+	home, err := GetHomeDir()
 	if err != nil {
 		return
 	}
