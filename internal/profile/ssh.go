@@ -3,6 +3,7 @@ package profile
 import (
 	"bufio"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -10,6 +11,7 @@ import (
 )
 
 func CheckSSHConfig() error {
+	slog.Debug("starting SSH configuration check")
 	fmt.Println("SSH Configuration Check:")
 
 	checkSSHD()
@@ -17,6 +19,7 @@ func CheckSSHConfig() error {
 	checkSSHDirPerms()
 	checkAuthorizedKeysPerms()
 
+	slog.Debug("SSH configuration check complete")
 	return nil
 }
 

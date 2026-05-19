@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"log/slog"
 	"os"
 
 	tea "charm.land/bubbletea/v2"
@@ -11,9 +12,19 @@ import (
 	"rta/internal/tui"
 )
 
+var verbose bool
+
 var rootCmd = &cobra.Command{
 	Use:   "rta",
 	Short: "Remote tmux Access — discover and attach to tmux sessions",
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		level := slog.LevelInfo
+		if verbose {
+			level = slog.LevelDebug
+		}
+		slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: level})))
+		return nil
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if sess, ok := singleClaudeSession(); ok {
 			return tmux.AttachSession(sess)
@@ -30,6 +41,7 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable debug logging")
 	rootCmd.AddCommand(attachCmd)
 	rootCmd.AddCommand(statusCmd)
 	rootCmd.AddCommand(setupCmd)

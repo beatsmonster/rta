@@ -3,6 +3,7 @@ package process
 import (
 	"bufio"
 	"bytes"
+	"log/slog"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -12,12 +13,16 @@ var runPS = func() ([]byte, error) {
 	return exec.Command("ps", "-ax", "-o", "pid,ppid,comm").Output()
 }
 
-func BuildTree() (children map[int][]int, names map[int]string, err error) {
+func BuildTree() (map[int][]int, map[int]string, error) {
 	out, err := runPS()
 	if err != nil {
 		return nil, nil, err
 	}
-	return parseTree(out)
+	children, names, parseErr := parseTree(out)
+	if parseErr == nil {
+		slog.Debug("built process tree", "process_count", len(names))
+	}
+	return children, names, parseErr
 }
 
 func parseTree(out []byte) (map[int][]int, map[int]string, error) {
@@ -51,6 +56,7 @@ func HasDescendant(rootPID int, target string, children map[int][]int, names map
 		pid := queue[0]
 		queue = queue[1:]
 		if names[pid] == target {
+			slog.Debug("found target descendant", "root_pid", rootPID, "target", target, "matched_pid", pid)
 			return true
 		}
 		queue = append(queue, children[pid]...)
