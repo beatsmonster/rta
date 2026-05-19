@@ -9,6 +9,7 @@ Build a single-binary Go CLI (rta) that discovers tmux sessions running Claude C
 ### Modifiable
 
 - main.go
+- *_test.go
 - cmd/**/*.go
 - internal/**/*.go
 - skill/**/*

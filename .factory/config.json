@@ -2,6 +2,7 @@
   "goal": "Build a single-binary Go CLI (rta) that discovers tmux sessions running Claude Code, presents them in a TUI with recap descriptions, and lets users attach with one keypress. Includes a Claude Code skill (`/enable-rta`) to onboard non-tmux sessions.",
   "scope": [
     "main.go",
+    "*_test.go",
     "cmd/**/*.go",
     "internal/**/*.go",
     "skill/**/*",
