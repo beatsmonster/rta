@@ -16,3 +16,7 @@
 - [x] archivist after build — 2026-05-19T15:18:14Z
 - [x] archivist after experiment 2 (revert) — 2026-05-19T15:28:26Z
 - [x] FINAL archivist — 2026-05-19T15:30:25Z
+- [x] archivist after experiment 4 (keep) — 2026-05-19T20:00:28Z
+- [x] archivist after experiment 5 (keep) — 2026-05-19T20:03:44Z
+- [x] FINAL archivist (cycle complete) — 2026-05-19T20:55:00Z
+- [x] FINAL archivist — 2026-05-19T20:07:43Z

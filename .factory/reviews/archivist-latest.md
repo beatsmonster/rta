@@ -1,16 +1,19 @@
 # Archivist Agent Output
 
-- **timestamp:** 2026-05-19T15:30:19Z
+- **timestamp:** 2026-05-19T20:07:38Z
 - **exit_code:** 0
 
 ---
 
-All archive tasks complete. Pre-flight checklist verified:
+All archive notes written and report updated. Let me verify the pre-flight checklist.
 
-1. **Experiment notes** — 3 notes written (009: exp 1 revert, 010: exp 2 build, 011: exp 2 revert)
-2. **Dashboard updated** — `remote-tmux-access.md` reflects both experiments, score ceiling analysis, and cycle reference
-3. **Strategy snapshot** — `remote-tmux-access-2026-05-19.md` exists with approved hypotheses
-4. **Source notes** — 4 optimization-cycle sources written (go-env-constraint, factory-eval-python-bias, slog-observability-strategy, backlog-items-are-constraints)
-5. **Patterns updated** — 4 new patterns added (eval Python bias, missing toolchain, eval immutability, slog zero-cost, clean code revert)
-6. **Cycle summary** — Written to `strategies/remote-tmux-access-2026-05-19-cycle-summary.md`
-7. **Performance report** — `factory report-update` ran successfully (2 experiments, report saved)
+**Pre-flight checklist:**
+
+1. **Experiment notes written?** Yes — 012 (exp 3, already existed), 013 (exp 4, already existed), 014 (exp 5, new)
+2. **Dashboard updated?** Yes — `remote-tmux-access.md` rewritten with final state (score 0.94, 11 kept / 2 reverted)
+3. **Strategy snapshot?** Yes — `remote-tmux-access-2026-05-19-final-cycle-summary.md` created with full cycle narrative
+4. **Source notes?** N/A — no new research in this final archival pass
+5. **Patterns updated?** Yes — added 2 new patterns: "Reverted Code Can Be Re-Applied After Eval Fix" and "Single-PR Batching for Related Feature Experiments"
+6. **Performance report updated?** Yes — `factory report-update` ran successfully (4 experiments, 51 observations)
+
+**Cycle complete.** 5 experiments archived (3 kept, 2 reverted). Final score 0.94. All 3 user-requested features delivered in PR #6.

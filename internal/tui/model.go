@@ -63,7 +63,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "r":
 			return m, tea.Batch(refreshSessions, loadRecaps)
-		case "q", "ctrl+c", "escape":
+		case "q", "ctrl+c", "esc":
 			return m, tea.Quit
 		}
 	case tea.WindowSizeMsg:

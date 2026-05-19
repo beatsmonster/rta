@@ -1,15 +1,18 @@
 # Session Summary — run-b198ea8f
 
-_Generated: 2026-05-19 15:30 UTC_
+_Generated: 2026-05-19 20:07 UTC_
 
 ## Overview
 
 - **Mode:** improve
-- **Experiments:** 2 total (0 kept, 2 reverted, 0 errors)
+- **Experiments:** 4 total (2 kept, 2 reverted, 0 errors)
 
 ## What Was Built
 
-No experiments were kept this session.
+| # | Hypothesis | Category | Delta | PR |
+|---|------------|----------|-------|----|
+| 4 | Recap infrastructure — internal/recap/ package + TUI display | EXPLORE | — | #6 |
+| 5 | /enable-rta Claude Code skill + rta setup skill subcommand | EXPLORE | — | #6 |
 
 ## What Was Deferred
 

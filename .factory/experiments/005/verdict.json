@@ -1,0 +1,15 @@
+{
+  "id": 5,
+  "timestamp": "2026-05-19 16:03:36.100296",
+  "hypothesis": "/enable-rta Claude Code skill + rta setup skill subcommand",
+  "change_summary": "Created skill/enable-rta/SKILL.md with session migration instructions. Added rta setup skill subcommand with go:embed. Tests at 91% cmd coverage.",
+  "issue_number": 8,
+  "pr_number": 6,
+  "score_before": null,
+  "score_after": null,
+  "delta": null,
+  "verdict": "keep",
+  "cost_usd": null,
+  "notes": "ceo:keep score_delta=+0.0000 precheck=scope_false_positive agents_spawned=B hypothesis_type=code execution_artifacts=na e2e=pass backlog_cleared=yes review_pipeline=full review_iterations=1",
+  "research_citations": []
+}

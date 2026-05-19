@@ -123,3 +123,21 @@
 {"type": "sprint.completed", "timestamp": "2026-05-19T15:30:25.157974+00:00", "project": "run-b198ea8f", "agent": null, "data": {}}
 {"type": "summary.started", "timestamp": "2026-05-19T15:30:32.073660+00:00", "project": "run-b198ea8f", "agent": null, "data": {}}
 {"type": "summary.completed", "timestamp": "2026-05-19T15:30:32.077870+00:00", "project": "run-b198ea8f", "agent": null, "data": {"kept": 0, "reverted": 2, "errored": 0, "backlog": 8}}
+{"type": "precheck.completed", "timestamp": "2026-05-19T20:00:11.437039+00:00", "project": "run-b198ea8f", "agent": null, "data": {"passed": false, "failures": ["scope"]}}
+{"type": "verdict.force_kept", "timestamp": "2026-05-19T20:00:20.912156+00:00", "project": "run-b198ea8f", "agent": null, "data": {"exp_id": 4}}
+{"type": "experiment.finalize", "timestamp": "2026-05-19T20:00:20.915785+00:00", "project": "run-b198ea8f", "agent": null, "data": {"exp_id": 4, "verdict": "keep", "hypothesis": "Recap infrastructure \u2014 internal/recap/ package + TUI display"}}
+{"type": "phase.verdict", "timestamp": "2026-05-19T20:00:28.811139+00:00", "project": "run-b198ea8f", "agent": null, "data": {"verdict": "keep", "exp_id": 4}}
+{"type": "phase.eval.completed", "timestamp": "2026-05-19T20:00:28.867097+00:00", "project": "run-b198ea8f", "agent": null, "data": {"exp_id": 4}}
+{"type": "phase.archive.completed", "timestamp": "2026-05-19T20:00:28.923424+00:00", "project": "run-b198ea8f", "agent": null, "data": {"exp_id": 4}}
+{"type": "experiment.begin", "timestamp": "2026-05-19T20:00:33.732317+00:00", "project": "run-b198ea8f", "agent": null, "data": {"exp_id": 5, "hypothesis": "/enable-rta Claude Code skill + rta setup skill subcommand"}}
+{"type": "agent.started", "timestamp": "2026-05-19T20:01:08.518056+00:00", "project": "run-b198ea8f", "agent": "builder", "data": {"task": "Implement GitHub issue #8 in beatsmonster/rta.\n1. Read the issue: gh issue view 8\n2. cd /Users/yizheng/redhat/repos/rta/.factory/worktrees/run-b198ea8f, read CLAUDE.md and factory.md\n3. The worktree a"}}
+{"type": "agent.completed", "timestamp": "2026-05-19T20:03:14.780431+00:00", "project": "run-b198ea8f", "agent": "builder", "data": {"return_code": 0}}
+{"type": "verdict.force_kept", "timestamp": "2026-05-19T20:03:36.099959+00:00", "project": "run-b198ea8f", "agent": null, "data": {"exp_id": 5}}
+{"type": "experiment.finalize", "timestamp": "2026-05-19T20:03:36.103226+00:00", "project": "run-b198ea8f", "agent": null, "data": {"exp_id": 5, "verdict": "keep", "hypothesis": "/enable-rta Claude Code skill + rta setup skill subcommand"}}
+{"type": "phase.verdict", "timestamp": "2026-05-19T20:03:44.108082+00:00", "project": "run-b198ea8f", "agent": null, "data": {"verdict": "keep", "exp_id": 5}}
+{"type": "phase.archive.completed", "timestamp": "2026-05-19T20:03:44.165890+00:00", "project": "run-b198ea8f", "agent": null, "data": {"exp_id": 5}}
+{"type": "agent.started", "timestamp": "2026-05-19T20:03:53.156469+00:00", "project": "run-b198ea8f", "agent": "archivist", "data": {"task": "Final archive for this factory cycle on /Users/yizheng/redhat/repos/rta/.factory/worktrees/run-b198ea8f.\nThis cycle ran 5 experiments (3 kept, 2 reverted from prior cycle):\n- Exp 1: eval resilience \u2014 "}}
+{"type": "agent.completed", "timestamp": "2026-05-19T20:07:38.418950+00:00", "project": "run-b198ea8f", "agent": "archivist", "data": {"return_code": 0}}
+{"type": "sprint.completed", "timestamp": "2026-05-19T20:07:43.441113+00:00", "project": "run-b198ea8f", "agent": null, "data": {}}
+{"type": "summary.started", "timestamp": "2026-05-19T20:07:47.083565+00:00", "project": "run-b198ea8f", "agent": null, "data": {}}
+{"type": "summary.completed", "timestamp": "2026-05-19T20:07:47.088036+00:00", "project": "run-b198ea8f", "agent": null, "data": {"kept": 2, "reverted": 2, "errored": 0, "backlog": 8}}

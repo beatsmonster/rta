@@ -83,7 +83,7 @@ func TestUpdateKeyRefresh(t *testing.T) {
 }
 
 func TestUpdateQuitKeys(t *testing.T) {
-	for _, key := range []string{"q", "ctrl+c", "escape"} {
+	for _, key := range []string{"q", "ctrl+c", "esc"} {
 		t.Run(key, func(t *testing.T) {
 			_, cmd := model{}.Update(tea.KeyPressMsg{Code: -1, Text: key})
 			if cmd == nil {
