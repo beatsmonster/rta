@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
 	"text/tabwriter"
@@ -62,6 +63,8 @@ func showStatus(asJSON bool) error {
 	if err != nil {
 		return fmt.Errorf("building process tree: %w", err)
 	}
+
+	slog.Debug("showing status", "session_count", len(sessions))
 
 	var statuses []sessionStatus
 	for _, s := range sessions {

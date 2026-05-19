@@ -2,6 +2,7 @@ package tmux
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"strconv"
@@ -30,7 +31,11 @@ func ListSessions() ([]Session, error) {
 	if err != nil {
 		return nil, classifyError(err)
 	}
-	return parseSessions(string(out))
+	sessions, parseErr := parseSessions(string(out))
+	if parseErr == nil {
+		slog.Debug("listed tmux sessions", "session_count", len(sessions))
+	}
+	return sessions, parseErr
 }
 
 func ListPanes(sessionName string) ([]Pane, error) {
@@ -41,10 +46,15 @@ func ListPanes(sessionName string) ([]Pane, error) {
 	if err != nil {
 		return nil, fmt.Errorf("tmux list-panes: %w", err)
 	}
-	return parsePanes(string(out))
+	panes, parseErr := parsePanes(string(out))
+	if parseErr == nil {
+		slog.Debug("listed panes", "session_name", sessionName, "pane_count", len(panes))
+	}
+	return panes, parseErr
 }
 
 func AttachSession(sessionName string) error {
+	slog.Debug("attaching to session", "session_name", sessionName)
 	binary, err := exec.LookPath("tmux")
 	if err != nil {
 		return fmt.Errorf("tmux not found: %w", err)

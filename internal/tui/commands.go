@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"log/slog"
 	"os/exec"
 
 	tea "charm.land/bubbletea/v2"
@@ -40,6 +41,7 @@ func refreshSessions() tea.Msg {
 		infos = append(infos, info)
 	}
 
+	slog.Debug("refreshed sessions", "session_count", len(infos))
 	return sessionsMsg{sessions: infos}
 }
 

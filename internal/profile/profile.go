@@ -3,6 +3,7 @@ package profile
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -50,12 +51,14 @@ func Remove() error {
 }
 
 func InstallTo(path string) error {
+	slog.Debug("installing profile block", "target_file", path)
 	content, err := os.ReadFile(path)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
 
 	if strings.Contains(string(content), startMarker) {
+		slog.Debug("profile block already installed", "target_file", path)
 		return nil
 	}
 
@@ -74,6 +77,7 @@ func InstallTo(path string) error {
 }
 
 func RemoveFrom(path string) error {
+	slog.Debug("removing profile block", "target_file", path)
 	content, err := os.ReadFile(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
@@ -83,6 +87,7 @@ func RemoveFrom(path string) error {
 	}
 
 	if !strings.Contains(string(content), startMarker) {
+		slog.Debug("no profile block found to remove", "target_file", path)
 		return nil
 	}
 
