@@ -7,6 +7,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"rta/internal/recap"
 )
 
 type SessionInfo struct {
@@ -21,10 +22,15 @@ type sessionsMsg struct {
 	err      error
 }
 
+type recapsMsg struct {
+	recaps map[string]*recap.Recap
+}
+
 type tmuxFinishedMsg struct{ err error }
 
 type model struct {
 	sessions []SessionInfo
+	recaps   map[string]*recap.Recap
 	cursor   int
 	width    int
 	height   int
@@ -36,7 +42,7 @@ func New() model {
 }
 
 func (m model) Init() tea.Cmd {
-	return refreshSessions
+	return tea.Batch(refreshSessions, loadRecaps)
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -56,7 +62,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, attachTmux(m.sessions[m.cursor].Name)
 			}
 		case "r":
-			return m, refreshSessions
+			return m, tea.Batch(refreshSessions, loadRecaps)
 		case "q", "ctrl+c", "escape":
 			return m, tea.Quit
 		}
@@ -74,8 +80,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.cursor >= len(m.sessions) {
 			m.cursor = max(0, len(m.sessions)-1)
 		}
+	case recapsMsg:
+		m.recaps = msg.recaps
 	case tmuxFinishedMsg:
-		return m, refreshSessions
+		return m, tea.Batch(refreshSessions, loadRecaps)
 	}
 	return m, nil
 }
@@ -86,6 +94,7 @@ var (
 	normalStyle   = lipgloss.NewStyle()
 	helpStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("241"))
 	errStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("196"))
+	recapStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("241")).Italic(true)
 )
 
 func (m model) View() tea.View {
@@ -125,6 +134,14 @@ func (m model) View() tea.View {
 		b.WriteString("\n")
 		for _, i := range otherSessions {
 			b.WriteString(m.renderSession(i))
+			b.WriteString("\n")
+		}
+	}
+
+	if len(m.sessions) > 0 && m.cursor < len(m.sessions) {
+		if r, ok := m.recaps[m.sessions[m.cursor].Name]; ok && r.Description != "" {
+			b.WriteString("\n")
+			b.WriteString(recapStyle.Render(r.Description))
 			b.WriteString("\n")
 		}
 	}

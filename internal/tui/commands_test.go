@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"rta/internal/process"
+	"rta/internal/recap"
 	"rta/internal/tmux"
 )
 
@@ -57,6 +58,32 @@ func TestRefreshSessionsSuccess(t *testing.T) {
 	}
 	if sm.sessions[1].HasClaude {
 		t.Error("build should not have claude")
+	}
+}
+
+func TestLoadRecaps(t *testing.T) {
+	tmp := t.TempDir()
+	recap.SetHomeDir(t, func() (string, error) { return tmp, nil })
+
+	recap.Save(&recap.Recap{Name: "dev", Description: "feature work"})
+	recap.Save(&recap.Recap{Name: "build", Description: "CI pipeline"})
+
+	msg := loadRecaps().(recapsMsg)
+	if len(msg.recaps) != 2 {
+		t.Fatalf("loadRecaps() returned %d recaps, want 2", len(msg.recaps))
+	}
+	if msg.recaps["dev"].Description != "feature work" {
+		t.Errorf("dev recap = %q", msg.recaps["dev"].Description)
+	}
+}
+
+func TestLoadRecapsEmpty(t *testing.T) {
+	tmp := t.TempDir()
+	recap.SetHomeDir(t, func() (string, error) { return tmp, nil })
+
+	msg := loadRecaps().(recapsMsg)
+	if len(msg.recaps) != 0 {
+		t.Errorf("loadRecaps() returned %d recaps, want 0", len(msg.recaps))
 	}
 }
 

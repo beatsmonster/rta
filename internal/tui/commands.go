@@ -6,6 +6,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"rta/internal/process"
+	"rta/internal/recap"
 	"rta/internal/tmux"
 )
 
@@ -43,6 +44,19 @@ func refreshSessions() tea.Msg {
 
 	slog.Debug("refreshed sessions", "session_count", len(infos))
 	return sessionsMsg{sessions: infos}
+}
+
+func loadRecaps() tea.Msg {
+	recaps, err := recap.List()
+	if err != nil {
+		slog.Debug("failed to load recaps", "error", err)
+		return recapsMsg{}
+	}
+	m := make(map[string]*recap.Recap, len(recaps))
+	for _, r := range recaps {
+		m[r.Name] = r
+	}
+	return recapsMsg{recaps: m}
 }
 
 func attachTmux(name string) tea.Cmd {

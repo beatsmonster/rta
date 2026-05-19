@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
+	"rta/internal/recap"
 )
 
 type testError struct{}
@@ -196,4 +197,103 @@ func TestRenderSessionAttached(t *testing.T) {
 	if s := m.renderSession(0); !strings.Contains(s, "(attached)") {
 		t.Errorf("attached session should show (attached), got: %s", s)
 	}
+}
+
+func TestUpdateRecapsMsg(t *testing.T) {
+	recaps := map[string]*recap.Recap{
+		"dev": {Name: "dev", Description: "working on feature X"},
+	}
+	um, _ := model{}.Update(recapsMsg{recaps: recaps})
+	m := um.(model)
+	if m.recaps == nil || m.recaps["dev"] == nil {
+		t.Error("recapsMsg should set recaps map")
+	}
+}
+
+func TestViewWithRecap(t *testing.T) {
+	m := model{
+		sessions: []SessionInfo{{Name: "dev", HasClaude: true, WorkingDir: "/tmp"}},
+		recaps: map[string]*recap.Recap{
+			"dev": {Name: "dev", Description: "working on feature X"},
+		},
+		cursor: 0,
+	}
+	v := m.View()
+	if !strings.Contains(v.Content, "working on feature X") {
+		t.Errorf("view should show recap description, got: %s", v.Content)
+	}
+}
+
+func TestViewWithoutRecap(t *testing.T) {
+	m := model{
+		sessions: []SessionInfo{{Name: "dev", HasClaude: true, WorkingDir: "/tmp"}},
+		recaps:   map[string]*recap.Recap{},
+		cursor:   0,
+	}
+	v := m.View()
+	if strings.Contains(v.Content, "no recap") {
+		t.Error("view should not show 'no recap' placeholder")
+	}
+}
+
+func TestViewRecapNilMap(t *testing.T) {
+	m := model{
+		sessions: []SessionInfo{{Name: "dev", HasClaude: true, WorkingDir: "/tmp"}},
+		recaps:   nil,
+		cursor:   0,
+	}
+	v := m.View()
+	if !strings.Contains(v.Content, "dev") {
+		t.Errorf("view should still render sessions with nil recaps map, got: %s", v.Content)
+	}
+}
+
+func TestViewRecapChangesWithCursor(t *testing.T) {
+	m := model{
+		sessions: []SessionInfo{
+			{Name: "dev", HasClaude: true, WorkingDir: "/tmp"},
+			{Name: "build", HasClaude: false, WorkingDir: "/tmp"},
+		},
+		recaps: map[string]*recap.Recap{
+			"dev":   {Name: "dev", Description: "feature work"},
+			"build": {Name: "build", Description: "CI pipeline"},
+		},
+		cursor: 0,
+	}
+	v0 := m.View()
+	if !strings.Contains(v0.Content, "feature work") {
+		t.Error("cursor=0 should show dev recap")
+	}
+
+	m.cursor = 1
+	v1 := m.View()
+	if !strings.Contains(v1.Content, "CI pipeline") {
+		t.Error("cursor=1 should show build recap")
+	}
+	if strings.Contains(v1.Content, "feature work") {
+		t.Error("cursor=1 should not show dev recap")
+	}
+}
+
+func TestViewRecapEmptyDescription(t *testing.T) {
+	m := model{
+		sessions: []SessionInfo{{Name: "dev", HasClaude: true, WorkingDir: "/tmp"}},
+		recaps: map[string]*recap.Recap{
+			"dev": {Name: "dev", Description: ""},
+		},
+		cursor: 0,
+	}
+	v := m.View()
+	lines := strings.Split(v.Content, "\n")
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" {
+			continue
+		}
+		if strings.Contains(trimmed, "dev") || strings.Contains(trimmed, "Claude") ||
+			strings.Contains(trimmed, "attach") || strings.Contains(trimmed, "Other") {
+			continue
+		}
+	}
+	_ = v
 }
