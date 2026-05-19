@@ -9,12 +9,12 @@ import (
 	"strings"
 )
 
-var RunPS = func() ([]byte, error) {
+var runPS = func() ([]byte, error) {
 	return exec.Command("ps", "-ax", "-o", "pid,ppid,comm").Output()
 }
 
 func BuildTree() (map[int][]int, map[int]string, error) {
-	out, err := RunPS()
+	out, err := runPS()
 	if err != nil {
 		return nil, nil, err
 	}

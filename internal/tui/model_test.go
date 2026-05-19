@@ -27,6 +27,7 @@ func TestInit(t *testing.T) {
 
 func TestUpdateKeyUp(t *testing.T) {
 	m := model{sessions: []SessionInfo{{Name: "a"}, {Name: "b"}}, cursor: 1}
+	// Code: -1 means no physical key code; bubbletea uses the Text field for matching.
 	um, _ := m.Update(tea.KeyPressMsg{Code: -1, Text: "k"})
 	if um.(model).cursor != 0 {
 		t.Errorf("cursor = %d, want 0", um.(model).cursor)

@@ -194,9 +194,7 @@ func TestFindSession(t *testing.T) {
 }
 
 func TestListSessionsSuccess(t *testing.T) {
-	orig := RunListSessions
-	defer func() { RunListSessions = orig }()
-	RunListSessions = func() ([]byte, error) { return []byte("dev|1|2\nbuild|0|1\n"), nil }
+	SetRunListSessions(t, func() ([]byte, error) { return []byte("dev|1|2\nbuild|0|1\n"), nil })
 
 	sessions, err := ListSessions()
 	if err != nil {
@@ -208,11 +206,9 @@ func TestListSessionsSuccess(t *testing.T) {
 }
 
 func TestListSessionsError(t *testing.T) {
-	orig := RunListSessions
-	defer func() { RunListSessions = orig }()
-	RunListSessions = func() ([]byte, error) {
+	SetRunListSessions(t, func() ([]byte, error) {
 		return nil, &exec.ExitError{Stderr: []byte("no server running")}
-	}
+	})
 
 	if _, err := ListSessions(); err != ErrNoServer {
 		t.Errorf("got %v, want ErrNoServer", err)
@@ -220,9 +216,7 @@ func TestListSessionsError(t *testing.T) {
 }
 
 func TestListPanesSuccess(t *testing.T) {
-	orig := RunListPanes
-	defer func() { RunListPanes = orig }()
-	RunListPanes = func(name string) ([]byte, error) { return []byte("12345|/home/user/project\n"), nil }
+	SetRunListPanes(t, func(name string) ([]byte, error) { return []byte("12345|/home/user/project\n"), nil })
 
 	panes, err := ListPanes("dev")
 	if err != nil {
@@ -234,9 +228,7 @@ func TestListPanesSuccess(t *testing.T) {
 }
 
 func TestListPanesError(t *testing.T) {
-	orig := RunListPanes
-	defer func() { RunListPanes = orig }()
-	RunListPanes = func(name string) ([]byte, error) { return nil, fmt.Errorf("tmux error") }
+	SetRunListPanes(t, func(name string) ([]byte, error) { return nil, fmt.Errorf("tmux error") })
 
 	if _, err := ListPanes("dev"); err == nil {
 		t.Error("expected error")
@@ -244,17 +236,13 @@ func TestListPanesError(t *testing.T) {
 }
 
 func TestAttachSessionSuccess(t *testing.T) {
-	origLP := LookPath
-	origExec := ExecSyscall
-	defer func() { LookPath = origLP; ExecSyscall = origExec }()
-
-	LookPath = func(file string) (string, error) { return "/usr/bin/tmux", nil }
-	ExecSyscall = func(binary string, args []string, env []string) error {
+	SetLookPath(t, func(file string) (string, error) { return "/usr/bin/tmux", nil })
+	SetExecSyscall(t, func(binary string, args []string, env []string) error {
 		if binary != "/usr/bin/tmux" || args[3] != "test-session" {
 			t.Errorf("unexpected args: binary=%q args=%v", binary, args)
 		}
 		return nil
-	}
+	})
 
 	if err := AttachSession("test-session"); err != nil {
 		t.Fatalf("AttachSession: %v", err)
@@ -262,9 +250,7 @@ func TestAttachSessionSuccess(t *testing.T) {
 }
 
 func TestAttachSessionLookPathError(t *testing.T) {
-	origLP := LookPath
-	defer func() { LookPath = origLP }()
-	LookPath = func(file string) (string, error) { return "", fmt.Errorf("not found") }
+	SetLookPath(t, func(file string) (string, error) { return "", fmt.Errorf("not found") })
 
 	err := AttachSession("test")
 	if err == nil || !strings.Contains(err.Error(), "tmux not found") {

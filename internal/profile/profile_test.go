@@ -255,17 +255,13 @@ func captureStdout(t *testing.T, f func()) string {
 }
 
 func TestCheckSSHConfigRuns(t *testing.T) {
-	origPgrep := RunPgrep
-	origHome := GetHomeDir
-	defer func() { RunPgrep = origPgrep; GetHomeDir = origHome }()
-
 	dir := t.TempDir()
 	sshDir := filepath.Join(dir, ".ssh")
 	os.MkdirAll(sshDir, 0700)
 	os.WriteFile(filepath.Join(sshDir, "authorized_keys"), []byte("ssh-rsa AAAA...\n"), 0600)
 
-	RunPgrep = func() ([]byte, error) { return []byte("1234\n"), nil }
-	GetHomeDir = func() (string, error) { return dir, nil }
+	SetRunPgrep(t, func() ([]byte, error) { return []byte("1234\n"), nil })
+	SetGetHomeDir(t, func() (string, error) { return dir, nil })
 
 	out := captureStdout(t, func() {
 		if err := CheckSSHConfig(); err != nil {
@@ -278,9 +274,7 @@ func TestCheckSSHConfigRuns(t *testing.T) {
 }
 
 func TestCheckSSHDNotRunning(t *testing.T) {
-	origPgrep := RunPgrep
-	defer func() { RunPgrep = origPgrep }()
-	RunPgrep = func() ([]byte, error) { return nil, fmt.Errorf("no sshd") }
+	SetRunPgrep(t, func() ([]byte, error) { return nil, fmt.Errorf("no sshd") })
 
 	out := captureStdout(t, func() { checkSSHD() })
 	if !strings.Contains(out, "[!!] sshd is not running") {
@@ -289,9 +283,7 @@ func TestCheckSSHDNotRunning(t *testing.T) {
 }
 
 func TestCheckSSHDRunning(t *testing.T) {
-	origPgrep := RunPgrep
-	defer func() { RunPgrep = origPgrep }()
-	RunPgrep = func() ([]byte, error) { return []byte("1234\n"), nil }
+	SetRunPgrep(t, func() ([]byte, error) { return []byte("1234\n"), nil })
 
 	out := captureStdout(t, func() { checkSSHD() })
 	if !strings.Contains(out, "[OK] sshd is running") {
@@ -300,9 +292,7 @@ func TestCheckSSHDRunning(t *testing.T) {
 }
 
 func TestCheckSSHDEmptyOutput(t *testing.T) {
-	origPgrep := RunPgrep
-	defer func() { RunPgrep = origPgrep }()
-	RunPgrep = func() ([]byte, error) { return []byte("  \n"), nil }
+	SetRunPgrep(t, func() ([]byte, error) { return []byte("  \n"), nil })
 
 	out := captureStdout(t, func() { checkSSHD() })
 	if !strings.Contains(out, "[!!] sshd is not running") {
@@ -311,9 +301,7 @@ func TestCheckSSHDEmptyOutput(t *testing.T) {
 }
 
 func TestCheckAuthorizedKeysHomeDirError(t *testing.T) {
-	origHome := GetHomeDir
-	defer func() { GetHomeDir = origHome }()
-	GetHomeDir = func() (string, error) { return "", fmt.Errorf("no home") }
+	SetGetHomeDir(t, func() (string, error) { return "", fmt.Errorf("no home") })
 
 	out := captureStdout(t, func() { checkAuthorizedKeys() })
 	if !strings.Contains(out, "cannot determine home directory") {
@@ -322,9 +310,7 @@ func TestCheckAuthorizedKeysHomeDirError(t *testing.T) {
 }
 
 func TestCheckAuthorizedKeysNotExists(t *testing.T) {
-	origHome := GetHomeDir
-	defer func() { GetHomeDir = origHome }()
-	GetHomeDir = func() (string, error) { return t.TempDir(), nil }
+	SetGetHomeDir(t, func() (string, error) { return t.TempDir(), nil })
 
 	out := captureStdout(t, func() { checkAuthorizedKeys() })
 	if !strings.Contains(out, "does not exist") {
@@ -333,13 +319,11 @@ func TestCheckAuthorizedKeysNotExists(t *testing.T) {
 }
 
 func TestCheckAuthorizedKeysEmpty(t *testing.T) {
-	origHome := GetHomeDir
-	defer func() { GetHomeDir = origHome }()
 	dir := t.TempDir()
 	sshDir := filepath.Join(dir, ".ssh")
 	os.MkdirAll(sshDir, 0700)
 	os.WriteFile(filepath.Join(sshDir, "authorized_keys"), []byte("# comment\n\n"), 0600)
-	GetHomeDir = func() (string, error) { return dir, nil }
+	SetGetHomeDir(t, func() (string, error) { return dir, nil })
 
 	out := captureStdout(t, func() { checkAuthorizedKeys() })
 	if !strings.Contains(out, "exists but is empty") {
@@ -348,13 +332,11 @@ func TestCheckAuthorizedKeysEmpty(t *testing.T) {
 }
 
 func TestCheckAuthorizedKeysWithKeys(t *testing.T) {
-	origHome := GetHomeDir
-	defer func() { GetHomeDir = origHome }()
 	dir := t.TempDir()
 	sshDir := filepath.Join(dir, ".ssh")
 	os.MkdirAll(sshDir, 0700)
 	os.WriteFile(filepath.Join(sshDir, "authorized_keys"), []byte("ssh-rsa AAAA key1\nssh-ed25519 AAAB key2\n"), 0600)
-	GetHomeDir = func() (string, error) { return dir, nil }
+	SetGetHomeDir(t, func() (string, error) { return dir, nil })
 
 	out := captureStdout(t, func() { checkAuthorizedKeys() })
 	if !strings.Contains(out, "(2 keys)") {
@@ -363,9 +345,7 @@ func TestCheckAuthorizedKeysWithKeys(t *testing.T) {
 }
 
 func TestCheckSSHDirPermsHomeDirError(t *testing.T) {
-	origHome := GetHomeDir
-	defer func() { GetHomeDir = origHome }()
-	GetHomeDir = func() (string, error) { return "", fmt.Errorf("no home") }
+	SetGetHomeDir(t, func() (string, error) { return "", fmt.Errorf("no home") })
 
 	out := captureStdout(t, func() { checkSSHDirPerms() })
 	if out != "" {
@@ -374,9 +354,7 @@ func TestCheckSSHDirPermsHomeDirError(t *testing.T) {
 }
 
 func TestCheckSSHDirPermsNotExists(t *testing.T) {
-	origHome := GetHomeDir
-	defer func() { GetHomeDir = origHome }()
-	GetHomeDir = func() (string, error) { return t.TempDir(), nil }
+	SetGetHomeDir(t, func() (string, error) { return t.TempDir(), nil })
 
 	out := captureStdout(t, func() { checkSSHDirPerms() })
 	if !strings.Contains(out, "does not exist") {
@@ -385,11 +363,9 @@ func TestCheckSSHDirPermsNotExists(t *testing.T) {
 }
 
 func TestCheckSSHDirPermsWrong(t *testing.T) {
-	origHome := GetHomeDir
-	defer func() { GetHomeDir = origHome }()
 	dir := t.TempDir()
 	os.MkdirAll(filepath.Join(dir, ".ssh"), 0755)
-	GetHomeDir = func() (string, error) { return dir, nil }
+	SetGetHomeDir(t, func() (string, error) { return dir, nil })
 
 	out := captureStdout(t, func() { checkSSHDirPerms() })
 	if !strings.Contains(out, "should be 0700") {
@@ -398,11 +374,9 @@ func TestCheckSSHDirPermsWrong(t *testing.T) {
 }
 
 func TestCheckSSHDirPermsCorrect(t *testing.T) {
-	origHome := GetHomeDir
-	defer func() { GetHomeDir = origHome }()
 	dir := t.TempDir()
 	os.MkdirAll(filepath.Join(dir, ".ssh"), 0700)
-	GetHomeDir = func() (string, error) { return dir, nil }
+	SetGetHomeDir(t, func() (string, error) { return dir, nil })
 
 	out := captureStdout(t, func() { checkSSHDirPerms() })
 	if !strings.Contains(out, "[OK] ~/.ssh permissions are 0700") {
@@ -411,9 +385,7 @@ func TestCheckSSHDirPermsCorrect(t *testing.T) {
 }
 
 func TestCheckAuthorizedKeysPermsHomeDirError(t *testing.T) {
-	origHome := GetHomeDir
-	defer func() { GetHomeDir = origHome }()
-	GetHomeDir = func() (string, error) { return "", fmt.Errorf("no home") }
+	SetGetHomeDir(t, func() (string, error) { return "", fmt.Errorf("no home") })
 
 	out := captureStdout(t, func() { checkAuthorizedKeysPerms() })
 	if out != "" {
@@ -422,9 +394,7 @@ func TestCheckAuthorizedKeysPermsHomeDirError(t *testing.T) {
 }
 
 func TestCheckAuthorizedKeysPermsNotExists(t *testing.T) {
-	origHome := GetHomeDir
-	defer func() { GetHomeDir = origHome }()
-	GetHomeDir = func() (string, error) { return t.TempDir(), nil }
+	SetGetHomeDir(t, func() (string, error) { return t.TempDir(), nil })
 
 	out := captureStdout(t, func() { checkAuthorizedKeysPerms() })
 	if out != "" {
@@ -433,13 +403,11 @@ func TestCheckAuthorizedKeysPermsNotExists(t *testing.T) {
 }
 
 func TestCheckAuthorizedKeysPermsWrong(t *testing.T) {
-	origHome := GetHomeDir
-	defer func() { GetHomeDir = origHome }()
 	dir := t.TempDir()
 	sshDir := filepath.Join(dir, ".ssh")
 	os.MkdirAll(sshDir, 0700)
 	os.WriteFile(filepath.Join(sshDir, "authorized_keys"), []byte("key\n"), 0644)
-	GetHomeDir = func() (string, error) { return dir, nil }
+	SetGetHomeDir(t, func() (string, error) { return dir, nil })
 
 	out := captureStdout(t, func() { checkAuthorizedKeysPerms() })
 	if !strings.Contains(out, "should be 0600") {
@@ -448,13 +416,11 @@ func TestCheckAuthorizedKeysPermsWrong(t *testing.T) {
 }
 
 func TestCheckAuthorizedKeysPermsCorrect(t *testing.T) {
-	origHome := GetHomeDir
-	defer func() { GetHomeDir = origHome }()
 	dir := t.TempDir()
 	sshDir := filepath.Join(dir, ".ssh")
 	os.MkdirAll(sshDir, 0700)
 	os.WriteFile(filepath.Join(sshDir, "authorized_keys"), []byte("key\n"), 0600)
-	GetHomeDir = func() (string, error) { return dir, nil }
+	SetGetHomeDir(t, func() (string, error) { return dir, nil })
 
 	out := captureStdout(t, func() { checkAuthorizedKeysPerms() })
 	if !strings.Contains(out, "[OK] ~/.ssh/authorized_keys permissions are 0600") {

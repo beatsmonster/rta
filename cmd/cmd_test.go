@@ -10,10 +10,19 @@ import (
 	"rta/internal/tmux"
 )
 
+func resetRootCmd(t *testing.T) {
+	t.Helper()
+	t.Cleanup(func() {
+		rootCmd.SetArgs(nil)
+		rootCmd.SetOut(nil)
+		rootCmd.SetErr(nil)
+		verbose = false
+	})
+}
+
 func TestStatusCmdNoSessions(t *testing.T) {
-	origLS := tmux.RunListSessions
-	defer func() { tmux.RunListSessions = origLS }()
-	tmux.RunListSessions = func() ([]byte, error) { return nil, tmux.ErrNoServer }
+	resetRootCmd(t)
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return nil, tmux.ErrNoServer })
 
 	var buf bytes.Buffer
 	rootCmd.SetOut(&buf)
@@ -25,9 +34,8 @@ func TestStatusCmdNoSessions(t *testing.T) {
 }
 
 func TestStatusCmdJSON(t *testing.T) {
-	origLS := tmux.RunListSessions
-	defer func() { tmux.RunListSessions = origLS }()
-	tmux.RunListSessions = func() ([]byte, error) { return nil, tmux.ErrNoSessions }
+	resetRootCmd(t)
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return nil, tmux.ErrNoSessions })
 
 	rootCmd.SetArgs([]string{"status", "--json"})
 	if err := rootCmd.Execute(); err != nil {
@@ -36,16 +44,12 @@ func TestStatusCmdJSON(t *testing.T) {
 }
 
 func TestStatusCmdWithSessions(t *testing.T) {
-	origLS := tmux.RunListSessions
-	origLP := tmux.RunListPanes
-	origPS := process.RunPS
-	defer func() { tmux.RunListSessions = origLS; tmux.RunListPanes = origLP; process.RunPS = origPS }()
-
-	tmux.RunListSessions = func() ([]byte, error) { return []byte("dev|1|1\n"), nil }
-	tmux.RunListPanes = func(name string) ([]byte, error) { return []byte("100|/home/user\n"), nil }
-	process.RunPS = func() ([]byte, error) {
+	resetRootCmd(t)
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return []byte("dev|1|1\n"), nil })
+	tmux.SetRunListPanes(t, func(name string) ([]byte, error) { return []byte("100|/home/user\n"), nil })
+	process.SetRunPS(t, func() ([]byte, error) {
 		return []byte("  PID  PPID COMM\n  100     1 bash\n  101   100 claude\n"), nil
-	}
+	})
 
 	rootCmd.SetArgs([]string{"status"})
 	if err := rootCmd.Execute(); err != nil {
@@ -54,16 +58,12 @@ func TestStatusCmdWithSessions(t *testing.T) {
 }
 
 func TestStatusCmdWithSessionsJSON(t *testing.T) {
-	origLS := tmux.RunListSessions
-	origLP := tmux.RunListPanes
-	origPS := process.RunPS
-	defer func() { tmux.RunListSessions = origLS; tmux.RunListPanes = origLP; process.RunPS = origPS }()
-
-	tmux.RunListSessions = func() ([]byte, error) { return []byte("dev|0|1\n"), nil }
-	tmux.RunListPanes = func(name string) ([]byte, error) { return []byte("100|/home/user\n"), nil }
-	process.RunPS = func() ([]byte, error) {
+	resetRootCmd(t)
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return []byte("dev|0|1\n"), nil })
+	tmux.SetRunListPanes(t, func(name string) ([]byte, error) { return []byte("100|/home/user\n"), nil })
+	process.SetRunPS(t, func() ([]byte, error) {
 		return []byte("  PID  PPID COMM\n  100     1 bash\n  101   100 claude\n"), nil
-	}
+	})
 
 	rootCmd.SetArgs([]string{"status", "-j"})
 	if err := rootCmd.Execute(); err != nil {
@@ -72,6 +72,7 @@ func TestStatusCmdWithSessionsJSON(t *testing.T) {
 }
 
 func TestAttachCmdNoArgs(t *testing.T) {
+	resetRootCmd(t)
 	rootCmd.SetArgs([]string{"attach"})
 	if err := rootCmd.Execute(); err == nil {
 		t.Error("attach without args should fail")
@@ -79,9 +80,8 @@ func TestAttachCmdNoArgs(t *testing.T) {
 }
 
 func TestAttachCmdNoServer(t *testing.T) {
-	origLS := tmux.RunListSessions
-	defer func() { tmux.RunListSessions = origLS }()
-	tmux.RunListSessions = func() ([]byte, error) { return nil, tmux.ErrNoServer }
+	resetRootCmd(t)
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return nil, tmux.ErrNoServer })
 
 	rootCmd.SetArgs([]string{"attach", "test"})
 	if err := rootCmd.Execute(); err == nil {
@@ -90,9 +90,8 @@ func TestAttachCmdNoServer(t *testing.T) {
 }
 
 func TestAttachCmdNoSessions(t *testing.T) {
-	origLS := tmux.RunListSessions
-	defer func() { tmux.RunListSessions = origLS }()
-	tmux.RunListSessions = func() ([]byte, error) { return nil, tmux.ErrNoSessions }
+	resetRootCmd(t)
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return nil, tmux.ErrNoSessions })
 
 	rootCmd.SetArgs([]string{"attach", "test"})
 	if err := rootCmd.Execute(); err == nil {
@@ -101,9 +100,8 @@ func TestAttachCmdNoSessions(t *testing.T) {
 }
 
 func TestAttachCmdEmptySessions(t *testing.T) {
-	origLS := tmux.RunListSessions
-	defer func() { tmux.RunListSessions = origLS }()
-	tmux.RunListSessions = func() ([]byte, error) { return []byte(""), nil }
+	resetRootCmd(t)
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return []byte(""), nil })
 
 	rootCmd.SetArgs([]string{"attach", "test"})
 	if err := rootCmd.Execute(); err == nil {
@@ -112,9 +110,8 @@ func TestAttachCmdEmptySessions(t *testing.T) {
 }
 
 func TestAttachCmdNoMatch(t *testing.T) {
-	origLS := tmux.RunListSessions
-	defer func() { tmux.RunListSessions = origLS }()
-	tmux.RunListSessions = func() ([]byte, error) { return []byte("dev|0|1\n"), nil }
+	resetRootCmd(t)
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return []byte("dev|0|1\n"), nil })
 
 	rootCmd.SetArgs([]string{"attach", "nonexistent"})
 	if err := rootCmd.Execute(); err == nil {
@@ -123,9 +120,8 @@ func TestAttachCmdNoMatch(t *testing.T) {
 }
 
 func TestAttachCmdAmbiguous(t *testing.T) {
-	origLS := tmux.RunListSessions
-	defer func() { tmux.RunListSessions = origLS }()
-	tmux.RunListSessions = func() ([]byte, error) { return []byte("webapp|0|1\nweb-api|0|1\n"), nil }
+	resetRootCmd(t)
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return []byte("webapp|0|1\nweb-api|0|1\n"), nil })
 
 	rootCmd.SetArgs([]string{"attach", "web"})
 	if err := rootCmd.Execute(); err == nil {
@@ -134,14 +130,10 @@ func TestAttachCmdAmbiguous(t *testing.T) {
 }
 
 func TestAttachCmdMatch(t *testing.T) {
-	origLS := tmux.RunListSessions
-	origLP := tmux.LookPath
-	origExec := tmux.ExecSyscall
-	defer func() { tmux.RunListSessions = origLS; tmux.LookPath = origLP; tmux.ExecSyscall = origExec }()
-
-	tmux.RunListSessions = func() ([]byte, error) { return []byte("dev|0|1\n"), nil }
-	tmux.LookPath = func(file string) (string, error) { return "/usr/bin/tmux", nil }
-	tmux.ExecSyscall = func(binary string, args []string, env []string) error { return nil }
+	resetRootCmd(t)
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return []byte("dev|0|1\n"), nil })
+	tmux.SetLookPath(t, func(file string) (string, error) { return "/usr/bin/tmux", nil })
+	tmux.SetExecSyscall(t, func(binary string, args []string, env []string) error { return nil })
 
 	rootCmd.SetArgs([]string{"attach", "dev"})
 	if err := rootCmd.Execute(); err != nil {
@@ -150,14 +142,10 @@ func TestAttachCmdMatch(t *testing.T) {
 }
 
 func TestAttachCmdAttachError(t *testing.T) {
-	origLS := tmux.RunListSessions
-	origLP := tmux.LookPath
-	origExec := tmux.ExecSyscall
-	defer func() { tmux.RunListSessions = origLS; tmux.LookPath = origLP; tmux.ExecSyscall = origExec }()
-
-	tmux.RunListSessions = func() ([]byte, error) { return []byte("dev|0|1\n"), nil }
-	tmux.LookPath = func(file string) (string, error) { return "/usr/bin/tmux", nil }
-	tmux.ExecSyscall = func(binary string, args []string, env []string) error { return fmt.Errorf("attach failed") }
+	resetRootCmd(t)
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return []byte("dev|0|1\n"), nil })
+	tmux.SetLookPath(t, func(file string) (string, error) { return "/usr/bin/tmux", nil })
+	tmux.SetExecSyscall(t, func(binary string, args []string, env []string) error { return fmt.Errorf("attach failed") })
 
 	rootCmd.SetArgs([]string{"attach", "dev"})
 	if err := rootCmd.Execute(); err == nil {
@@ -166,9 +154,8 @@ func TestAttachCmdAttachError(t *testing.T) {
 }
 
 func TestAttachCmdListError(t *testing.T) {
-	origLS := tmux.RunListSessions
-	defer func() { tmux.RunListSessions = origLS }()
-	tmux.RunListSessions = func() ([]byte, error) { return nil, fmt.Errorf("tmux: some other error") }
+	resetRootCmd(t)
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return nil, fmt.Errorf("tmux: some other error") })
 
 	rootCmd.SetArgs([]string{"attach", "test"})
 	if err := rootCmd.Execute(); err == nil {
@@ -177,12 +164,9 @@ func TestAttachCmdListError(t *testing.T) {
 }
 
 func TestStatusCmdProcessTreeError(t *testing.T) {
-	origLS := tmux.RunListSessions
-	origPS := process.RunPS
-	defer func() { tmux.RunListSessions = origLS; process.RunPS = origPS }()
-
-	tmux.RunListSessions = func() ([]byte, error) { return []byte("dev|0|1\n"), nil }
-	process.RunPS = func() ([]byte, error) { return nil, fmt.Errorf("ps failed") }
+	resetRootCmd(t)
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return []byte("dev|0|1\n"), nil })
+	process.SetRunPS(t, func() ([]byte, error) { return nil, fmt.Errorf("ps failed") })
 
 	rootCmd.SetArgs([]string{"status"})
 	if err := rootCmd.Execute(); err == nil {
@@ -191,9 +175,7 @@ func TestStatusCmdProcessTreeError(t *testing.T) {
 }
 
 func TestSingleClaudeSessionNone(t *testing.T) {
-	origLS := tmux.RunListSessions
-	defer func() { tmux.RunListSessions = origLS }()
-	tmux.RunListSessions = func() ([]byte, error) { return nil, tmux.ErrNoServer }
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return nil, tmux.ErrNoServer })
 
 	if _, ok := singleClaudeSession(); ok {
 		t.Error("expected false when no server")
@@ -201,9 +183,7 @@ func TestSingleClaudeSessionNone(t *testing.T) {
 }
 
 func TestSingleClaudeSessionNoSessions(t *testing.T) {
-	origLS := tmux.RunListSessions
-	defer func() { tmux.RunListSessions = origLS }()
-	tmux.RunListSessions = func() ([]byte, error) { return []byte(""), nil }
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return []byte(""), nil })
 
 	if _, ok := singleClaudeSession(); ok {
 		t.Error("expected false when no sessions")
@@ -211,12 +191,8 @@ func TestSingleClaudeSessionNoSessions(t *testing.T) {
 }
 
 func TestSingleClaudeSessionBuildTreeError(t *testing.T) {
-	origLS := tmux.RunListSessions
-	origPS := process.RunPS
-	defer func() { tmux.RunListSessions = origLS; process.RunPS = origPS }()
-
-	tmux.RunListSessions = func() ([]byte, error) { return []byte("dev|0|1\n"), nil }
-	process.RunPS = func() ([]byte, error) { return nil, fmt.Errorf("ps failed") }
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return []byte("dev|0|1\n"), nil })
+	process.SetRunPS(t, func() ([]byte, error) { return nil, fmt.Errorf("ps failed") })
 
 	if _, ok := singleClaudeSession(); ok {
 		t.Error("expected false when build tree fails")
@@ -224,21 +200,16 @@ func TestSingleClaudeSessionBuildTreeError(t *testing.T) {
 }
 
 func TestSingleClaudeSessionOne(t *testing.T) {
-	origLS := tmux.RunListSessions
-	origLP := tmux.RunListPanes
-	origPS := process.RunPS
-	defer func() { tmux.RunListSessions = origLS; tmux.RunListPanes = origLP; process.RunPS = origPS }()
-
-	tmux.RunListSessions = func() ([]byte, error) { return []byte("dev|0|1\nbuild|0|1\n"), nil }
-	tmux.RunListPanes = func(name string) ([]byte, error) {
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return []byte("dev|0|1\nbuild|0|1\n"), nil })
+	tmux.SetRunListPanes(t, func(name string) ([]byte, error) {
 		if name == "dev" {
 			return []byte("100|/home\n"), nil
 		}
 		return []byte("200|/home\n"), nil
-	}
-	process.RunPS = func() ([]byte, error) {
+	})
+	process.SetRunPS(t, func() ([]byte, error) {
 		return []byte("  PID  PPID COMM\n  100     1 bash\n  101   100 claude\n  200     1 bash\n"), nil
-	}
+	})
 
 	sess, ok := singleClaudeSession()
 	if !ok || sess != "dev" {
@@ -247,21 +218,16 @@ func TestSingleClaudeSessionOne(t *testing.T) {
 }
 
 func TestSingleClaudeSessionMultiple(t *testing.T) {
-	origLS := tmux.RunListSessions
-	origLP := tmux.RunListPanes
-	origPS := process.RunPS
-	defer func() { tmux.RunListSessions = origLS; tmux.RunListPanes = origLP; process.RunPS = origPS }()
-
-	tmux.RunListSessions = func() ([]byte, error) { return []byte("dev|0|1\nbuild|0|1\n"), nil }
-	tmux.RunListPanes = func(name string) ([]byte, error) {
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return []byte("dev|0|1\nbuild|0|1\n"), nil })
+	tmux.SetRunListPanes(t, func(name string) ([]byte, error) {
 		if name == "dev" {
 			return []byte("100|/home\n"), nil
 		}
 		return []byte("200|/home\n"), nil
-	}
-	process.RunPS = func() ([]byte, error) {
+	})
+	process.SetRunPS(t, func() ([]byte, error) {
 		return []byte("  PID  PPID COMM\n  100     1 bash\n  101   100 claude\n  200     1 bash\n  201   200 claude\n"), nil
-	}
+	})
 
 	if _, ok := singleClaudeSession(); ok {
 		t.Error("expected false for multiple claude sessions")
@@ -269,16 +235,11 @@ func TestSingleClaudeSessionMultiple(t *testing.T) {
 }
 
 func TestSingleClaudeSessionPaneError(t *testing.T) {
-	origLS := tmux.RunListSessions
-	origLP := tmux.RunListPanes
-	origPS := process.RunPS
-	defer func() { tmux.RunListSessions = origLS; tmux.RunListPanes = origLP; process.RunPS = origPS }()
-
-	tmux.RunListSessions = func() ([]byte, error) { return []byte("dev|0|1\n"), nil }
-	tmux.RunListPanes = func(name string) ([]byte, error) { return nil, fmt.Errorf("pane error") }
-	process.RunPS = func() ([]byte, error) {
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return []byte("dev|0|1\n"), nil })
+	tmux.SetRunListPanes(t, func(name string) ([]byte, error) { return nil, fmt.Errorf("pane error") })
+	process.SetRunPS(t, func() ([]byte, error) {
 		return []byte("  PID  PPID COMM\n  100     1 bash\n"), nil
-	}
+	})
 
 	if _, ok := singleClaudeSession(); ok {
 		t.Error("expected false when pane error")
@@ -286,16 +247,11 @@ func TestSingleClaudeSessionPaneError(t *testing.T) {
 }
 
 func TestSingleClaudeSessionNoClaude(t *testing.T) {
-	origLS := tmux.RunListSessions
-	origLP := tmux.RunListPanes
-	origPS := process.RunPS
-	defer func() { tmux.RunListSessions = origLS; tmux.RunListPanes = origLP; process.RunPS = origPS }()
-
-	tmux.RunListSessions = func() ([]byte, error) { return []byte("dev|0|1\n"), nil }
-	tmux.RunListPanes = func(name string) ([]byte, error) { return []byte("100|/home\n"), nil }
-	process.RunPS = func() ([]byte, error) {
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return []byte("dev|0|1\n"), nil })
+	tmux.SetRunListPanes(t, func(name string) ([]byte, error) { return []byte("100|/home\n"), nil })
+	process.SetRunPS(t, func() ([]byte, error) {
 		return []byte("  PID  PPID COMM\n  100     1 bash\n"), nil
-	}
+	})
 
 	if _, ok := singleClaudeSession(); ok {
 		t.Error("expected false when no claude")
@@ -303,9 +259,8 @@ func TestSingleClaudeSessionNoClaude(t *testing.T) {
 }
 
 func TestVerboseFlag(t *testing.T) {
-	origLS := tmux.RunListSessions
-	defer func() { tmux.RunListSessions = origLS }()
-	tmux.RunListSessions = func() ([]byte, error) { return nil, tmux.ErrNoServer }
+	resetRootCmd(t)
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return nil, tmux.ErrNoServer })
 
 	rootCmd.SetArgs([]string{"status", "-v"})
 	if err := rootCmd.Execute(); err != nil {
@@ -314,9 +269,7 @@ func TestVerboseFlag(t *testing.T) {
 }
 
 func TestShowStatusEmptySessions(t *testing.T) {
-	origLS := tmux.RunListSessions
-	defer func() { tmux.RunListSessions = origLS }()
-	tmux.RunListSessions = func() ([]byte, error) { return []byte(""), nil }
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return []byte(""), nil })
 
 	if err := showStatus(false); err != nil {
 		t.Fatalf("showStatus: %v", err)
@@ -324,9 +277,7 @@ func TestShowStatusEmptySessions(t *testing.T) {
 }
 
 func TestShowStatusEmptySessionsJSON(t *testing.T) {
-	origLS := tmux.RunListSessions
-	defer func() { tmux.RunListSessions = origLS }()
-	tmux.RunListSessions = func() ([]byte, error) { return []byte(""), nil }
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return []byte(""), nil })
 
 	if err := showStatus(true); err != nil {
 		t.Fatalf("showStatus json: %v", err)
@@ -334,9 +285,7 @@ func TestShowStatusEmptySessionsJSON(t *testing.T) {
 }
 
 func TestShowStatusGenericError(t *testing.T) {
-	origLS := tmux.RunListSessions
-	defer func() { tmux.RunListSessions = origLS }()
-	tmux.RunListSessions = func() ([]byte, error) { return nil, fmt.Errorf("tmux: unknown error") }
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return nil, fmt.Errorf("tmux: unknown error") })
 
 	err := showStatus(false)
 	if err == nil || !strings.Contains(err.Error(), "listing sessions") {
@@ -345,9 +294,7 @@ func TestShowStatusGenericError(t *testing.T) {
 }
 
 func TestShowStatusNoServerJSON(t *testing.T) {
-	origLS := tmux.RunListSessions
-	defer func() { tmux.RunListSessions = origLS }()
-	tmux.RunListSessions = func() ([]byte, error) { return nil, tmux.ErrNoServer }
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return nil, tmux.ErrNoServer })
 
 	if err := showStatus(true); err != nil {
 		t.Fatalf("showStatus: %v", err)
@@ -355,9 +302,7 @@ func TestShowStatusNoServerJSON(t *testing.T) {
 }
 
 func TestShowStatusNoServerText(t *testing.T) {
-	origLS := tmux.RunListSessions
-	defer func() { tmux.RunListSessions = origLS }()
-	tmux.RunListSessions = func() ([]byte, error) { return nil, tmux.ErrNoSessions }
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return nil, tmux.ErrNoSessions })
 
 	if err := showStatus(false); err != nil {
 		t.Fatalf("showStatus: %v", err)
@@ -365,16 +310,11 @@ func TestShowStatusNoServerText(t *testing.T) {
 }
 
 func TestShowStatusPaneError(t *testing.T) {
-	origLS := tmux.RunListSessions
-	origLP := tmux.RunListPanes
-	origPS := process.RunPS
-	defer func() { tmux.RunListSessions = origLS; tmux.RunListPanes = origLP; process.RunPS = origPS }()
-
-	tmux.RunListSessions = func() ([]byte, error) { return []byte("dev|0|1\n"), nil }
-	tmux.RunListPanes = func(name string) ([]byte, error) { return nil, fmt.Errorf("pane error") }
-	process.RunPS = func() ([]byte, error) {
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return []byte("dev|0|1\n"), nil })
+	tmux.SetRunListPanes(t, func(name string) ([]byte, error) { return nil, fmt.Errorf("pane error") })
+	process.SetRunPS(t, func() ([]byte, error) {
 		return []byte("  PID  PPID COMM\n  100     1 bash\n"), nil
-	}
+	})
 
 	if err := showStatus(false); err != nil {
 		t.Fatalf("showStatus should handle pane error: %v", err)
@@ -382,6 +322,7 @@ func TestShowStatusPaneError(t *testing.T) {
 }
 
 func TestSetupCmdInstall(t *testing.T) {
+	resetRootCmd(t)
 	t.Setenv("SHELL", "/bin/zsh")
 	t.Setenv("HOME", t.TempDir())
 	rootCmd.SetArgs([]string{"setup"})
@@ -391,6 +332,7 @@ func TestSetupCmdInstall(t *testing.T) {
 }
 
 func TestSetupCmdUndo(t *testing.T) {
+	resetRootCmd(t)
 	t.Setenv("SHELL", "/bin/bash")
 	t.Setenv("HOME", t.TempDir())
 	rootCmd.SetArgs([]string{"setup", "--undo"})
@@ -400,6 +342,7 @@ func TestSetupCmdUndo(t *testing.T) {
 }
 
 func TestSetupSSHCmd(t *testing.T) {
+	resetRootCmd(t)
 	rootCmd.SetArgs([]string{"setup", "ssh"})
 	if err := rootCmd.Execute(); err != nil {
 		t.Fatalf("setup ssh: %v", err)
@@ -407,9 +350,8 @@ func TestSetupSSHCmd(t *testing.T) {
 }
 
 func TestExecuteFunction(t *testing.T) {
-	origLS := tmux.RunListSessions
-	defer func() { tmux.RunListSessions = origLS }()
-	tmux.RunListSessions = func() ([]byte, error) { return nil, tmux.ErrNoServer }
+	resetRootCmd(t)
+	tmux.SetRunListSessions(t, func() ([]byte, error) { return nil, tmux.ErrNoServer })
 
 	rootCmd.SetArgs([]string{"status"})
 	Execute()
