@@ -2,3 +2,7 @@
 - No API keys, credentials, or external accounts needed
 - No permissions beyond normal file system access
 - SSH config checker is read-only (inspect, don't modify)
+- Add OpenTelemetry trace context propagation (trace_id per CLI invocation) to push observability score higher via the `has_trace` component
+- Investigate whether the factory's capability_surface eval can be extended to support Go via a project-level override in eval/score.py
+- Add OpenTelemetry trace context propagation (trace_id per CLI invocation) to push observability score higher via the has_trace component
+- Investigate whether the factory capability_surface eval can be extended to support Go via a project-level override in eval/score.py

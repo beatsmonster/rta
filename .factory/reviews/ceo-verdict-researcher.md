@@ -1,5 +1,7 @@
 ## CEO Review: Researcher Agent
 - **Verdict:** PROCEED
-- **Rationale:** Research is implementation-ready with concrete Go code patterns for all 6 topics. Key insights: use custom list over bubbles/list, tea.ExecProcess for TUI→tmux handoff, syscall.Exec for direct attach, single `ps` call for process tree, pipe delimiter for tmux format parsing, marker-based profile injection. Build sequence is dependency-ordered.
-- **Issues found:** None. Research correctly notes session_width/height removed in tmux 2.9. Code samples are directly usable.
-- **Instructions for next step:** Strategist should follow the 7-step implementation sequence from research. Phase 1 should be scaffold + tmux/process packages. Each subsequent phase adds one vertical slice.
+- **Rationale:** Research correctly identified the core constraint: Go is not installed in this environment, which means tests/lint/build all fail at the eval level. The eval/score.py runs `go test ./...` and `go vet ./...` which fail with "command not found". The factory's built-in eval similarly can't detect Go tooling. Research also correctly identified observability (0%) as the most impactful actionable dimension since the eval scans Go source files directly without needing to run Go. Capability_surface is blocked (Python-only counter).
+- **Issues found:**
+  - The backlog items are constraint notes, not actionable work items — they read like "tmux is assumed to be installed" which isn't a task. The Strategist should be aware these are informational.
+  - Go not being installed means the test and lint dimensions of the project-level eval/score.py will fail regardless of code quality. Hypotheses should focus on what can actually be scored.
+- **Instructions for next step:** The Strategist should generate hypotheses focused on: (1) observability (add slog structured logging — scored via source scanning, no Go binary needed), (2) fixing the eval/score.py to handle missing Go gracefully (return partial scores rather than crashing), and (3) any growth improvements. The backlog items are constraint notes, not tasks — do not try to "clear" them. The effective backlog is empty.

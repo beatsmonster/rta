@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"rta/internal/tmux"
 
@@ -34,6 +35,7 @@ func attachToSession(name string) error {
 	}
 
 	matches := tmux.FindSession(name, sessions)
+	slog.Debug("searching for session", "query", name, "match_count", len(matches))
 
 	switch len(matches) {
 	case 0:

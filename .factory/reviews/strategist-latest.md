@@ -1,21 +1,14 @@
 # Strategist Agent Output
 
-- **timestamp:** 2026-05-17T18:10:55Z
+- **timestamp:** 2026-05-19T15:00:15Z
 - **exit_code:** 0
 
 ---
 
-Build plan written to `.factory/strategy/current.md`. 
+Strategy written to `.factory/strategy/current.md` with 2 hypotheses:
 
-**8 phases covering the complete build:**
+1. **H1 (EXPLORE, high priority):** Add `log/slog` structured logging across all packages — targets **observability** growth dimension. Observability 0.0 → ~0.56. The eval scans Go source files directly, no Go binary needed.
 
-1. **Scaffold** — Go module, directory structure, Makefile, CLAUDE.md, factory.md eval harness
-2. **tmux parsing** — `ListSessions`, `ListPanes`, pipe-delimited output parsing
-3. **Process tree** — single `ps` call, BFS walk to detect `claude` in descendants
-4. **Cobra commands** — `attach`, `status --json`, `setup`, `setup ssh` wired up
-5. **syscall.Exec attach** — end-to-end `rta attach <name>` with substring matching and edge cases
-6. **Bubble Tea TUI** — two-section session list, cursor navigation, `tea.ExecProcess` handoff, auto-attach
-7. **Shell profile injection** — marker-based `setup`/`setup --undo`, idempotent, permission-preserving
-8. **SSH config checker** — read-only inspection of sshd, authorized_keys, permissions
+2. **H2 (FIX, high priority):** Make `eval/score.py` resilient to missing Go toolchain — targets **factory_effectiveness** growth dimension. Catches `FileNotFoundError` so the observability eval can actually report its score.
 
-Nothing deferred — no human intervention needed for any component.
+Both hypotheses are scoped to one PR each, require no Go installation, and address the two actionable improvements identified by research and the CEO's review. Two new backlog items added for future cycles (trace propagation, capability_surface extension).

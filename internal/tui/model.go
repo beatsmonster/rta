@@ -7,6 +7,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"rta/internal/recap"
 )
 
 type SessionInfo struct {
@@ -21,10 +22,15 @@ type sessionsMsg struct {
 	err      error
 }
 
+type recapsMsg struct {
+	recaps map[string]*recap.Recap
+}
+
 type tmuxFinishedMsg struct{ err error }
 
 type model struct {
 	sessions []SessionInfo
+	recaps   map[string]*recap.Recap
 	cursor   int
 	width    int
 	height   int
@@ -36,7 +42,7 @@ func New() model {
 }
 
 func (m model) Init() tea.Cmd {
-	return refreshSessions
+	return tea.Batch(refreshSessions, loadRecaps)
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -56,8 +62,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, attachTmux(m.sessions[m.cursor].Name)
 			}
 		case "r":
-			return m, refreshSessions
-		case "q", "ctrl+c":
+			return m, tea.Batch(refreshSessions, loadRecaps)
+		case "q", "ctrl+c", "esc":
 			return m, tea.Quit
 		}
 	case tea.WindowSizeMsg:
@@ -74,8 +80,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.cursor >= len(m.sessions) {
 			m.cursor = max(0, len(m.sessions)-1)
 		}
+	case recapsMsg:
+		m.recaps = msg.recaps
 	case tmuxFinishedMsg:
-		return m, refreshSessions
+		return m, tea.Batch(refreshSessions, loadRecaps)
 	}
 	return m, nil
 }
@@ -86,15 +94,16 @@ var (
 	normalStyle   = lipgloss.NewStyle()
 	helpStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("241"))
 	errStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("196"))
+	recapStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("241")).Italic(true)
 )
 
 func (m model) View() tea.View {
 	if m.err != nil {
-		return tea.NewView(errStyle.Render(fmt.Sprintf("Error: %v", m.err)) + "\n\n" + helpStyle.Render("[r] retry  [q] quit"))
+		return tea.NewView(errStyle.Render(fmt.Sprintf("Error: %v", m.err)) + "\n\n" + helpStyle.Render("[r] retry  [esc/q] quit"))
 	}
 
 	if len(m.sessions) == 0 {
-		return tea.NewView("No tmux sessions found.\n\n" + helpStyle.Render("[r] refresh  [q] quit"))
+		return tea.NewView("No tmux sessions found.\n\n" + helpStyle.Render("[r] refresh  [esc/q] quit"))
 	}
 
 	var claudeSessions, otherSessions []int
@@ -129,8 +138,16 @@ func (m model) View() tea.View {
 		}
 	}
 
+	if len(m.sessions) > 0 && m.cursor < len(m.sessions) {
+		if r, ok := m.recaps[m.sessions[m.cursor].Name]; ok && r.Description != "" {
+			b.WriteString("\n")
+			b.WriteString(recapStyle.Render(r.Description))
+			b.WriteString("\n")
+		}
+	}
+
 	b.WriteString("\n")
-	b.WriteString(helpStyle.Render("[enter] attach  [r] refresh  [q] quit"))
+	b.WriteString(helpStyle.Render("[enter] attach  [r] refresh  [esc/q] quit"))
 
 	return tea.NewView(b.String())
 }

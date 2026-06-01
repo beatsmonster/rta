@@ -1,0 +1,1 @@
+Make eval/score.py resilient to missing Go toolchain by handling FileNotFoundError in eval_tests() and eval_lint()

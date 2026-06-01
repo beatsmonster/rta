@@ -1,0 +1,1 @@
+Add log/slog structured logging across all packages with --verbose flag for observability

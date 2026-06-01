@@ -1,13 +1,16 @@
 # Builder Agent Output
 
-- **timestamp:** 2026-05-17T18:42:08Z
+- **timestamp:** 2026-05-19T20:03:14Z
 - **exit_code:** 0
 
 ---
 
-Done. Phase 8 is implemented:
+Done. All changes are pushed to the existing PR #6 at https://github.com/beatsmonster/rta/pull/6.
 
-- **`internal/profile/ssh.go`** — `CheckSSHConfig()` performs four read-only checks: sshd running (via `pgrep`), `~/.ssh/authorized_keys` exists with key count, `~/.ssh` dir permissions (0700), and `authorized_keys` permissions (0600). Each prints `[OK]` or `[!!]` with a fix instruction.
-- **`cmd/setup_ssh.go`** — wired to call `profile.CheckSSHConfig()` instead of the placeholder.
+**Summary of changes:**
+- **`skill/enable-rta/SKILL.md`** — Claude Code skill with frontmatter and step-by-step instructions for moving a session into tmux
+- **`cmd/setup_skill.go`** — `rta setup skill` subcommand using `go:embed` to install the skill to `~/.claude/skills/enable-rta/`
+- **`cmd/skill_embed/SKILL.md`** — embedded copy for `go:embed` (Go doesn't allow `..` in embed paths)
+- **`cmd/setup_skill_test.go`** — tests for embed content, file creation, and overwrite behavior
 
-Build, vet, and tests all pass clean.
+All tests pass (91.2% cmd coverage), `go vet` clean.

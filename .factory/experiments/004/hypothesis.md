@@ -1,0 +1,1 @@
+Recap infrastructure — internal/recap/ package + TUI display for session descriptions

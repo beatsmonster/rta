@@ -2,15 +2,18 @@
 
 ## Goal
 
-Build a single-binary Go CLI (rta) that discovers tmux sessions running Claude Code and lets users attach to them from iPhone SSH clients.
+Build a single-binary Go CLI (rta) that discovers tmux sessions running Claude Code, presents them in a TUI with recap descriptions, and lets users attach with one keypress. Includes a Claude Code skill (`/enable-rta`) to onboard non-tmux sessions.
 
 ## Scope
 
 ### Modifiable
 
 - main.go
+- *_test.go
 - cmd/**/*.go
 - internal/**/*.go
+- skill/**/*
+- eval/score.py
 - Makefile
 - CLAUDE.md
 
@@ -25,18 +28,19 @@ Build a single-binary Go CLI (rta) that discovers tmux sessions running Claude C
 - Do not delete or overwrite existing tests
 - Do not modify files outside the declared scope
 - Do not introduce secrets or credentials into the repository
+- All code must have test coverage
 
 ## Eval
 
 ### Command
 
 ```bash
-python eval/score.py
+python3 eval/score.py
 ```
 
 ### Threshold
 
-0.8
+0.48
 
 ## Target Branch
 

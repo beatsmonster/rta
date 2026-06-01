@@ -2,6 +2,7 @@ package tmux
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"strconv"
@@ -23,34 +24,55 @@ type Pane struct {
 var ErrNoServer = fmt.Errorf("tmux: no server running")
 var ErrNoSessions = fmt.Errorf("tmux: no sessions")
 
+var runListSessions = func() ([]byte, error) {
+	return exec.Command("tmux", "list-sessions",
+		"-F", "#{session_name}|#{session_attached}|#{session_windows}").Output()
+}
+
+var runListPanes = func(sessionName string) ([]byte, error) {
+	return exec.Command("tmux", "list-panes",
+		"-t", sessionName,
+		"-F", "#{pane_pid}|#{pane_current_path}").Output()
+}
+
+var lookPath = exec.LookPath
+
+var execSyscall = func(binary string, args []string, env []string) error {
+	return syscall.Exec(binary, args, env)
+}
+
 func ListSessions() ([]Session, error) {
-	cmd := exec.Command("tmux", "list-sessions",
-		"-F", "#{session_name}|#{session_attached}|#{session_windows}")
-	out, err := cmd.Output()
+	out, err := runListSessions()
 	if err != nil {
 		return nil, classifyError(err)
 	}
-	return parseSessions(string(out))
+	sessions, parseErr := parseSessions(string(out))
+	if parseErr == nil {
+		slog.Debug("listed tmux sessions", "session_count", len(sessions))
+	}
+	return sessions, parseErr
 }
 
 func ListPanes(sessionName string) ([]Pane, error) {
-	cmd := exec.Command("tmux", "list-panes",
-		"-t", sessionName,
-		"-F", "#{pane_pid}|#{pane_current_path}")
-	out, err := cmd.Output()
+	out, err := runListPanes(sessionName)
 	if err != nil {
 		return nil, fmt.Errorf("tmux list-panes: %w", err)
 	}
-	return parsePanes(string(out))
+	panes, parseErr := parsePanes(string(out))
+	if parseErr == nil {
+		slog.Debug("listed panes", "session_name", sessionName, "pane_count", len(panes))
+	}
+	return panes, parseErr
 }
 
 func AttachSession(sessionName string) error {
-	binary, err := exec.LookPath("tmux")
+	slog.Debug("attaching to session", "session_name", sessionName)
+	binary, err := lookPath("tmux")
 	if err != nil {
 		return fmt.Errorf("tmux not found: %w", err)
 	}
 	args := []string{"tmux", "attach-session", "-t", sessionName}
-	return syscall.Exec(binary, args, os.Environ())
+	return execSyscall(binary, args, os.Environ())
 }
 
 func FindSession(substring string, sessions []Session) []Session {

@@ -3,13 +3,21 @@ package profile
 import (
 	"bufio"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 )
 
+var runPgrep = func() ([]byte, error) {
+	return exec.Command("pgrep", "-x", "sshd").Output()
+}
+
+var getHomeDir = os.UserHomeDir
+
 func CheckSSHConfig() error {
+	slog.Debug("starting SSH configuration check")
 	fmt.Println("SSH Configuration Check:")
 
 	checkSSHD()
@@ -17,11 +25,12 @@ func CheckSSHConfig() error {
 	checkSSHDirPerms()
 	checkAuthorizedKeysPerms()
 
+	slog.Debug("SSH configuration check complete")
 	return nil
 }
 
 func checkSSHD() {
-	out, err := exec.Command("pgrep", "-x", "sshd").Output()
+	out, err := runPgrep()
 	if err != nil || len(strings.TrimSpace(string(out))) == 0 {
 		fmt.Println("  [!!] sshd is not running")
 		fmt.Println("       Fix: Enable Remote Login in System Settings > General > Sharing")
@@ -31,7 +40,7 @@ func checkSSHD() {
 }
 
 func checkAuthorizedKeys() {
-	home, err := os.UserHomeDir()
+	home, err := getHomeDir()
 	if err != nil {
 		fmt.Printf("  [!!] cannot determine home directory: %v\n", err)
 		return
@@ -64,7 +73,7 @@ func checkAuthorizedKeys() {
 }
 
 func checkSSHDirPerms() {
-	home, err := os.UserHomeDir()
+	home, err := getHomeDir()
 	if err != nil {
 		return
 	}
@@ -87,7 +96,7 @@ func checkSSHDirPerms() {
 }
 
 func checkAuthorizedKeysPerms() {
-	home, err := os.UserHomeDir()
+	home, err := getHomeDir()
 	if err != nil {
 		return
 	}

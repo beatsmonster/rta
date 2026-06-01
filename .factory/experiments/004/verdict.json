@@ -1,0 +1,15 @@
+{
+  "id": 4,
+  "timestamp": "2026-05-19 16:00:20.912515",
+  "hypothesis": "Recap infrastructure \u2014 internal/recap/ package + TUI display",
+  "change_summary": "New internal/recap/ package with Load/Save/List/Dir. TUI displays recap for focused session. 719 lines across 7 files. 90%+ coverage.",
+  "issue_number": 7,
+  "pr_number": 6,
+  "score_before": null,
+  "score_after": null,
+  "delta": null,
+  "verdict": "keep",
+  "cost_usd": null,
+  "notes": "ceo:keep score_delta=+0.0000 precheck=scope_false_positive agents_spawned=B hypothesis_type=code execution_artifacts=na e2e=pass backlog_cleared=yes review_pipeline=full review_iterations=1",
+  "research_citations": []
+}
